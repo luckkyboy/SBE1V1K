@@ -27,6 +27,7 @@ git -C "$DEST" checkout -b prepared/sbe1v1k-20260722 "$OPENWRT_COMMIT"
 
 git -C "$DEST" am "$PROJECT_DIR"/patches/*.patch
 cp "$PROJECT_DIR/configs/sbe1v1k.config" "$DEST/sbe1v1k.config"
+cp "$PROJECT_DIR/configs/feeds.conf" "$DEST/feeds.conf"
 
 ACTUAL_TREE="$(git -C "$DEST" rev-parse 'HEAD^{tree}')"
 if [[ "$ACTUAL_TREE" != "$OPENWRT_TREE_AFTER_PATCHES" ]]; then
@@ -43,4 +44,3 @@ echo "SBE1V1K 源码已准备完成：$DEST"
 echo "分支：$(git -C "$DEST" branch --show-current)"
 echo "源码 tree：$ACTUAL_TREE"
 echo "下一步：$PROJECT_DIR/scripts/build.sh $DEST"
-

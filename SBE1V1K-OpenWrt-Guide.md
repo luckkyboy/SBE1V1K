@@ -38,6 +38,8 @@ SBE1V1K 已经具备可用的 OpenWrt 设备支持代码，但还不能称为“
 67a6d6b5080b00925eec3a2c16710047959044e3
 ```
 
+`configs/feeds.conf` 还把 packages、LuCI、routing、telephony、video 五个官方 feed 固定到 2026-07-22 的精确提交。否则 `feeds update -a` 会随时间漂移，即使设备源码 tree 相同也可能构建出不同内容。
+
 补丁顺序如下：
 
 1. `0001-wifi-ath12k-set-per-radio-MAC-address-from-DT.patch`
@@ -102,6 +104,7 @@ cd "$HOME/src/SBE1V1K"
 
 ```bash
 cd "$HOME/src/openwrt-sbe1v1k"
+cp "$HOME/src/SBE1V1K/configs/feeds.conf" feeds.conf
 ./scripts/feeds update -a
 ./scripts/feeds install -a
 cp "$HOME/src/SBE1V1K/configs/sbe1v1k.config" .config

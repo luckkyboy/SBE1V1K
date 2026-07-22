@@ -16,6 +16,7 @@ if [[ ! -x "$SOURCE_DIR/scripts/feeds" ]]; then
 fi
 
 cd "$SOURCE_DIR"
+cp "$PROJECT_DIR/configs/feeds.conf" feeds.conf
 ./scripts/feeds update -a
 ./scripts/feeds install -a
 cp "$PROJECT_DIR/configs/sbe1v1k.config" .config
@@ -31,4 +32,3 @@ make -j"$JOBS" world
 echo "构建完成。SBE1V1K 文件位于："
 find bin/targets/qualcommbe/ipq95xx -maxdepth 1 -type f \
     -name '*askey_sbe1v1k*' -print | sort
-

@@ -23,6 +23,7 @@ cd SBE1V1K
 - `patches/0002-*`：Felix Fietkau 提出的多个 PCI 路径候选修复。
 - `patches/0003-*`：firmware_qca-wireless PR #123 的精确 QCN9274 BDF 二进制补丁。
 - `configs/sbe1v1k.config`：同时生成 initramfs 和 squashfs sysupgrade 的最小配置。
+- `configs/feeds.conf`：把 packages、LuCI、routing、telephony、video 五个官方 feed 固定到调查日提交。
 - `scripts/prepare-source.sh`：获取固定作者基线并依次应用补丁，最后核对 Git tree 和 BDF SHA-256。
 - `scripts/build.sh`：更新 feeds、生成配置并编译目标镜像。
 
@@ -38,4 +39,3 @@ OpenWrt 完整工作树和编译产物不直接提交到本仓库；它们由固
 ## 许可证与风险
 
 本项目的脚本和文档使用仓库中的 MIT License。OpenWrt 及补丁中的第三方代码仍分别服从其上游许可证。刷机风险由操作者自行承担；没有完整 eMMC 备份时不要进行首次安装。
-
