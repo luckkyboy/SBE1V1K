@@ -11,21 +11,33 @@
 ```bash
 git clone https://github.com/luckkyboy/SBE1V1K.git
 cd SBE1V1K
+# 默认模式：应用所有三个在途补丁，包括未上游的实验性多路径方案
 ./scripts/prepare-source.sh "$HOME/src/openwrt-sbe1v1k"
 ./scripts/build.sh "$HOME/src/openwrt-sbe1v1k"
 ```
+
+如需严格审计 PR 作者最终分支，不应用任何项目补丁：
+
+```bash
+./scripts/prepare-source.sh --mode author-head "$HOME/src/openwrt-author-head"
+./scripts/verify-source.sh --mode author-head "$HOME/src/openwrt-author-head"
+```
+
+`author-head` 仅用于对照，不含独立 BDF、per-radio MAC 和多路径补丁，不保证能完成可用镜像构建。默认的 `tested-multipath` 才是本项目推荐构建模式。
 
 固定基线、补丁来源和校验值见 [sources.lock](sources.lock)，完整构建、拆机、备份和刷机步骤见 [SBE1V1K-OpenWrt-Guide.md](SBE1V1K-OpenWrt-Guide.md)。
 
 ## 本项目包含什么
 
 - `patches/0001-*`：OpenWrt PR #23786 的 ath12k 单 wiphy、多 radio MAC 修复。
-- `patches/0002-*`：Felix Fietkau 提出的多个 PCI 路径候选修复。
+- `patches/0002-*`：Felix Fietkau 提出的多个 PCI 路径候选修复；这是未进入作者分支、未合入 OpenWrt 的实验性集成。
 - `patches/0003-*`：firmware_qca-wireless PR #123 的精确 QCN9274 BDF 二进制补丁。
 - `configs/sbe1v1k.config`：同时生成 initramfs 和 squashfs sysupgrade 的最小配置。
 - `configs/feeds.conf`：把 packages、LuCI、routing、telephony、video 五个官方 feed 固定到调查日提交。
 - `scripts/prepare-source.sh`：获取固定作者基线并依次应用补丁，最后核对 Git tree 和 BDF SHA-256。
 - `scripts/build.sh`：更新 feeds、生成配置并编译目标镜像。
+
+每个补丁是否属于作者分支、上游状态及模式选择见 [patches/README.md](patches/README.md)。
 
 OpenWrt 完整工作树和编译产物不直接提交到本仓库；它们由固定提交和补丁确定性还原，避免复制数 GB 上游历史，同时保留每项改动的来源。
 

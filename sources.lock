@@ -2,13 +2,15 @@
 OPENWRT_REPOSITORY=https://github.com/andrewjlamarche/openwrt.git
 OPENWRT_BRANCH=sbe1v1k
 OPENWRT_COMMIT=525e6238f484876a0551323f9be4599e2945bc84
-OPENWRT_TREE_AFTER_PATCHES=67a6d6b5080b00925eec3a2c16710047959044e3
+OPENWRT_TREE_AUTHOR_HEAD=a3913efb3e6ae889d95bdd76b652e46f2e2b5f2a
+OPENWRT_TREE_TESTED_MULTIPATH=67a6d6b5080b00925eec3a2c16710047959044e3
 
 # https://github.com/openwrt/openwrt/pull/23786
 ATH12K_PER_RADIO_MAC_COMMIT=e811bcdf07a8db43d0b6a33171afe4468a34ba02
 
 # Felix Fietkau's multi-candidate PCI-path proposal, referenced from PR #23840.
 WIFI_MULTIPATH_PATCH=https://nbd.name/p/b83be8f0
+WIFI_MULTIPATH_STATUS=experimental_not_in_author_head
 
 # https://github.com/openwrt/firmware_qca-wireless/pull/123
 QCN9274_BDF_COMMIT=0d2b3c0c42b5cae549e59f1a3f003216ed4d6c4b

@@ -9,7 +9,7 @@ SBE1V1K 已经具备可用的 OpenWrt 设备支持代码，但还不能称为“
 - OpenWrt 设备支持 [PR #21586](https://github.com/openwrt/openwrt/pull/21586) 仍为 Open 状态，因此官方 snapshot/稳定版中还没有该机型配置和镜像。
 - PR 作者是 `andrewjlamarche`，其源码为 [andrewjlamarche/openwrt 的 sbe1v1k 分支](https://github.com/andrewjlamarche/openwrt/tree/sbe1v1k)。本项目固定在提交 `525e6238f484876a0551323f9be4599e2945bc84`，避免作者 force-push 后构建内容悄悄变化。
 - 作者分支已有 CPU、2 GB 内存、8 GB eMMC、四个以太网口、三频 Wi-Fi、LED、复位键和 PWM 风扇定义。论坛用户也报告这些普通功能可工作。
-- 仅克隆作者分支仍缺三个在途项：每 radio MAC、随机 PCI 枚举下的三 radio 稳定识别，以及 QCN9274 BDF。本项目已把它们保存为可追溯补丁。
+- 仅克隆作者分支仍缺三个在途项：每 radio MAC、随机 PCI 枚举下的三 radio 稳定识别，以及 QCN9274 BDF。本项目已把它们保存为可追溯补丁；其中多路径 `0002` 并非作者最终代码，而是未上游的实验性集成。
 - 目前没有 IPQ9574 PPE/NSS 硬件路由加速支持；高吞吐转发按软件路径理解。这里的“可用”不等于官方合并，也不等于有硬件卸载。
 - PR 的 GitHub 检查没有完成一次完整的 `qualcommbe/ipq95xx` 镜像编译；本项目当前 Windows 主机也没有安装 WSL Linux 发行版，因此这里不冒充“已实机构建验证”。源码 tree、补丁应用和二进制校验已经验证，完整编译命令如下。
 
@@ -32,7 +32,10 @@ SBE1V1K 已经具备可用的 OpenWrt 设备支持代码，但还不能称为“
 
 ## 3. 源码的可追溯组成
 
-`sources.lock` 是本项目的来源锁文件，`scripts/prepare-source.sh` 还原出的最终 Git tree 必须为：
+`sources.lock` 是本项目的来源锁文件。项目提供两个明确分开的模式：
+
+- `author-head`：严格还原 Andrew 的 `525e623`，不应用本项目补丁，tree 为 `a3913efb3e6ae889d95bdd76b652e46f2e2b5f2a`。它用于审计对照，不含独立 BDF、per-radio MAC 和多路径修复，不保证构建出可用镜像。
+- `tested-multipath`：默认推荐模式，依次应用下面三个补丁，最终 Git tree 必须为：
 
 ```text
 67a6d6b5080b00925eec3a2c16710047959044e3
@@ -48,6 +51,7 @@ SBE1V1K 已经具备可用的 OpenWrt 设备支持代码，但还不能称为“
    - 用途：从 DT 给单 wiphy 内的三个 radio 设置各自 MAC。
 2. `0002-wifi-scripts-support-multiple-candidate-PCI-paths.patch`
    - 来源：[Felix Fietkau 补丁 b83be8f0](https://nbd.name/p/b83be8f0)，设计讨论见 [PR #23840](https://github.com/openwrt/openwrt/pull/23840)
+   - 状态：**没有包含在 Andrew 的最终分支中，也未合入 OpenWrt；属于本项目实验性集成**。
    - 用途：把多个可能的 PCI 路径写入 `board.json`，避免 PCI 枚举变化后无线配置重复或消失。
 3. `0003-ipq-wifi-vendor-Askey-SBE1V1K-BDF.patch`
    - 来源：[firmware_qca-wireless PR #123](https://github.com/openwrt/firmware_qca-wireless/pull/123)，提交 `0d2b3c0c42b5cae549e59f1a3f003216ed4d6c4b`
@@ -99,6 +103,15 @@ cd "$HOME/src/SBE1V1K"
 ./scripts/verify-source.sh "$HOME/src/openwrt-sbe1v1k"
 ./scripts/build.sh "$HOME/src/openwrt-sbe1v1k"
 ```
+
+上述命令默认使用 `tested-multipath`。只审计作者 head 时使用：
+
+```bash
+./scripts/prepare-source.sh --mode author-head "$HOME/src/openwrt-author-head"
+./scripts/verify-source.sh --mode author-head "$HOME/src/openwrt-author-head"
+```
+
+不要把 `author-head` 当作推荐编译模式；其目的只是证明哪些内容确实来自作者最终分支。
 
 脚本做的核心编译步骤等价于：
 
