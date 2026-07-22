@@ -1,0 +1,39 @@
+# Reproducible SBE1V1K source inputs, frozen on 2026-07-22.
+# The current repository is the OpenWrt working tree; no preparation script is required.
+OPENWRT_REPOSITORY=https://github.com/andrewjlamarche/openwrt.git
+OPENWRT_BRANCH=sbe1v1k
+OPENWRT_COMMIT=525e6238f484876a0551323f9be4599e2945bc84
+OPENWRT_TREE_AUTHOR_HEAD=a3913efb3e6ae889d95bdd76b652e46f2e2b5f2a
+OPENWRT_DEVICE_TREE_AFTER_PATCHES=67a6d6b5080b00925eec3a2c16710047959044e3
+
+# https://github.com/openwrt/openwrt/pull/23786
+ATH12K_PER_RADIO_MAC_COMMIT=e811bcdf07a8db43d0b6a33171afe4468a34ba02
+
+# Felix Fietkau's multi-candidate PCI-path proposal, referenced from PR #23840.
+WIFI_MULTIPATH_PATCH=https://nbd.name/p/b83be8f0
+WIFI_MULTIPATH_STATUS=experimental_not_in_author_head
+WIFI_MULTIPATH_LOCAL_COMMIT=2268c9ebab
+
+# https://github.com/openwrt/firmware_qca-wireless/pull/123
+QCN9274_BDF_COMMIT=0d2b3c0c42b5cae549e59f1a3f003216ed4d6c4b
+QCN9274_BDF_SHA256=5ed8477ace2ce31236d756de24f31e7169acc69d8df18e5b81e7fdea0715e97a
+
+# Direct commits in this repository.
+ATH12K_PER_RADIO_MAC_LOCAL_COMMIT=06e83ac02d
+QCN9274_BDF_LOCAL_COMMIT=e5a4e1e388
+
+# Official feeds used by configs/feeds.conf.
+PACKAGES_FEED_COMMIT=c7e6d5ce4252fe3ebe7268cfea1e935cd5f52339
+LUCI_FEED_COMMIT=3e12b5338f44562159b6b032591ef5afa611c1e0
+ROUTING_FEED_COMMIT=c7872431105f69894201dc522b7560e47d1e8ba9
+TELEPHONY_FEED_COMMIT=5d68d53c160a325ea9d03fce393e051573bcc736
+VIDEO_FEED_COMMIT=a951381b6c58b9b1eb087f09c9a20cff4ffe8063
+
+# Optional second-stage U-Boot / HTTP recovery. Not an OpenWrt build dependency.
+HTTP_UBOOT_REPOSITORY=https://github.com/YYH2913/http-uboot.git
+HTTP_UBOOT_BRANCH=sbe1v1k
+HTTP_UBOOT_BRANCH_COMMIT=a8b8fc34c17904b56c1d564417383532f07dfa43
+HTTP_UBOOT_RELEASE_TAG=260720
+HTTP_UBOOT_RELEASE_COMMIT=f9523ea1405cd946a81b9e8064a801437ca4e995
+HTTP_UBOOT_RELEASE_ITB_SIZE=758532
+HTTP_UBOOT_RELEASE_ITB_SHA256=2aad05c1ee2574874a4570367a090ebf9af66cc02d23db91365ed0b83ef5d702

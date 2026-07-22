@@ -35,3 +35,5 @@ git-src
 .cproject
 .ccache
 .vscode*
+/.verify-patches-*/
+/openwrt-sbe1v1k/
