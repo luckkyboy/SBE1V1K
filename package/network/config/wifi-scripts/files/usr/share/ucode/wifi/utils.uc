@@ -25,9 +25,12 @@ function phy_paths(path) {
 }
 
 function phy_path_match_any(phy, paths) {
-	for (let path in phy_paths(paths))
+	for (let path in phy_paths(paths)) {
+		if (!path)
+			continue;
 		if (phy_path_match(phy, split(path, "+")[0]))
 			return true;
+	}
 
 	return false;
 }
@@ -37,6 +40,8 @@ function __find_phy_by_path(phys, paths) {
 		return null;
 
 	for (let path in phy_paths(paths)) {
+		if (!path)
+			continue;
 		path = split(path, "+");
 		let match = filter(phys, (phy) => phy_path_match(phy, path[0]));
 		match = sort(match, (a, b) => phy_index(a) - phy_index(b));
