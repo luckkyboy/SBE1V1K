@@ -1,0 +1,10 @@
+# Prepared OpenWrt worktrees and build output are reproducible artifacts.
+/openwrt/
+/openwrt-sbe1v1k/
+/.verify-*/
+*.bin
+*.img
+*.itb
+*.manifest
+*.buildinfo
+*.sha256sums

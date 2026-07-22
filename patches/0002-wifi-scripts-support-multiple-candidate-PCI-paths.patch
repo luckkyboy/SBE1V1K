@@ -1,0 +1,191 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Liu Fei <fei.liu@edoovo.com>
+Date: Wed, 22 Jul 2026 12:47:35 +0800
+Subject: [PATCH 2/3] wifi-scripts: support multiple candidate PCI paths
+
+Apply Felix Fietkau's proposed multi-path board.json support used by the SBE1V1K single-wiphy, multi-radio setup.
+
+Source: https://nbd.name/p/b83be8f0
+---
+ .../files/lib/functions/uci-defaults.sh       | 25 +++++++++++--
+ .../files/lib/netifd/wireless/mac80211.sh     | 35 +++++++++++++++----
+ .../files/usr/share/hostap/wifi-detect.uc     |  9 ++++-
+ .../files/usr/share/ucode/wifi/utils.uc       | 31 ++++++++++++----
+ 4 files changed, 82 insertions(+), 18 deletions(-)
+
+diff --git a/package/base-files/files/lib/functions/uci-defaults.sh b/package/base-files/files/lib/functions/uci-defaults.sh
+index f77ce4a..43c630f 100644
+--- a/package/base-files/files/lib/functions/uci-defaults.sh
++++ b/package/base-files/files/lib/functions/uci-defaults.sh
+@@ -757,13 +757,32 @@ ucidef_set_poe() {
+ }
+ 
+ ucidef_add_wlan() {
+-	local path="$1"; shift
+-
+ 	ucidef_wlan_idx=${ucidef_wlan_idx:-0}
+ 
+ 	json_select_object wlan
+ 	json_select_object "wl$ucidef_wlan_idx"
+-	json_add_string path "$path"
++
++	# Leading arguments without '=' are device paths; remaining
++	# name=value arguments are passed through as fields. Multiple
++	# paths are stored as an array so a phy that enumerates on any
++	# one of them maps to this entry (non-deterministic PCI order).
++	local npaths=0 arg
++	for arg in "$@"; do
++		[ "${arg#*=}" != "$arg" ] && break
++		npaths=$((npaths + 1))
++	done
++
++	if [ "$npaths" -gt 1 ]; then
++		json_select_array path
++		while [ "$npaths" -gt 0 ]; do
++			json_add_string "" "$1"; shift
++			npaths=$((npaths - 1))
++		done
++		json_select ..
++	elif [ "$npaths" -gt 0 ]; then
++		json_add_string path "$1"; shift
++	fi
++
+ 	json_add_fields "$@"
+ 	json_select ..
+ 	json_select ..
+diff --git a/package/network/config/wifi-scripts/files/lib/netifd/wireless/mac80211.sh b/package/network/config/wifi-scripts/files/lib/netifd/wireless/mac80211.sh
+index 30d08a3..5a561df 100755
+--- a/package/network/config/wifi-scripts/files/lib/netifd/wireless/mac80211.sh
++++ b/package/network/config/wifi-scripts/files/lib/netifd/wireless/mac80211.sh
+@@ -591,16 +591,25 @@ get_board_phy_name() (
+ 		local val="$1"
+ 		local key="$2"
+ 		local ref_path="$3"
++		local type paths path
+ 
+ 		json_select "$key"
+-		json_get_vars path
++		json_get_type type path
++		if [ "$type" = array ]; then
++			json_get_values paths path
++		else
++			json_get_vars path
++			paths="$path"
++		fi
+ 		json_select ..
+ 
+-		[ "${ref_path%+*}" = "$path" ] && fallback_phy=$key
+-		[ "$ref_path" = "$path" ] || return 0
++		for path in $paths; do
++			[ "${ref_path%+*}" = "${path%+*}" ] && fallback_phy=$key
++			[ "$ref_path" = "$path" ] || continue
+ 
+-		echo "$key"
+-		exit
++			echo "$key"
++			exit
++		done
+ 	}
+ 
+ 	json_load_file /etc/board.json
+@@ -625,9 +634,21 @@ rename_board_phy_by_name() (
+ 	json_load_file /etc/board.json
+ 	json_select wlan
+ 	json_select "${phy%.*}" || return 0
+-	json_get_vars path
+ 
+-	prev_phy="$(iwinfo nl80211 phyname "path=$path${suffix:++$suffix}")"
++	local type paths path
++	json_get_type type path
++	if [ "$type" = array ]; then
++		json_get_values paths path
++	else
++		json_get_vars path
++		paths="$path"
++	fi
++
++	local prev_phy=
++	for path in $paths; do
++		prev_phy="$(iwinfo nl80211 phyname "path=$path${suffix:++$suffix}")"
++		[ -n "$prev_phy" ] && break
++	done
+ 	[ -n "$prev_phy" ] || return 0
+ 
+ 	[ "$prev_phy" = "$phy" ] && return 0
+diff --git a/package/network/config/wifi-scripts/files/usr/share/hostap/wifi-detect.uc b/package/network/config/wifi-scripts/files/usr/share/hostap/wifi-detect.uc
+index db862d4..ccaa86b 100644
+--- a/package/network/config/wifi-scripts/files/usr/share/hostap/wifi-detect.uc
++++ b/package/network/config/wifi-scripts/files/usr/share/hostap/wifi-detect.uc
+@@ -38,12 +38,19 @@ function cleanup() {
+ 			delete wlan[name].info;
+ }
+ 
++function wiphy_path_match(entry_path, path) {
++	if (type(entry_path) == "array")
++		return index(entry_path, path) >= 0;
++
++	return entry_path == path;
++}
++
+ function wiphy_get_entry(phy, path) {
+ 	board_data.wlan ??= {};
+ 
+ 	let wlan = board_data.wlan;
+ 	for (let name in wlan)
+-		if (wlan[name].path == path)
++		if (wiphy_path_match(wlan[name].path, path))
+ 			return wlan[name];
+ 
+ 	wlan[phy] = {
+diff --git a/package/network/config/wifi-scripts/files/usr/share/ucode/wifi/utils.uc b/package/network/config/wifi-scripts/files/usr/share/ucode/wifi/utils.uc
+index 147c162..0abb963 100644
+--- a/package/network/config/wifi-scripts/files/usr/share/ucode/wifi/utils.uc
++++ b/package/network/config/wifi-scripts/files/usr/share/ucode/wifi/utils.uc
+@@ -20,15 +20,32 @@ function phy_path_match(phy, path) {
+ 	return substr(phy_path, -length(path)) == path;
+ }
+ 
+-function __find_phy_by_path(phys, path) {
+-	if (!path)
++function phy_paths(path) {
++	return type(path) == "array" ? path : [ path ];
++}
++
++function phy_path_match_any(phy, paths) {
++	for (let path in phy_paths(paths))
++		if (phy_path_match(phy, split(path, "+")[0]))
++			return true;
++
++	return false;
++}
++
++function __find_phy_by_path(phys, paths) {
++	if (!paths)
+ 		return null;
+ 
+-	path = split(path, "+");
+-	phys = filter(phys, (phy) => phy_path_match(phy, path[0]));
+-	phys = sort(phys, (a, b) => phy_index(a) - phy_index(b));
++	for (let path in phy_paths(paths)) {
++		path = split(path, "+");
++		let match = filter(phys, (phy) => phy_path_match(phy, path[0]));
++		match = sort(match, (a, b) => phy_index(a) - phy_index(b));
++		match = match[+path[1]];
++		if (match)
++			return match;
++	}
+ 
+-	return phys[+path[1]];
++	return null;
+ }
+ 
+ function find_phy_by_macaddr(phys, macaddr) {
+@@ -75,7 +92,7 @@ function find_phy_by_path(phys, path) {
+ 		return name;
+ 
+ 	for (let cur_name, cur_data in data) {
+-		if (!phy_path_match(name, cur_data.path))
++		if (!phy_path_match_any(name, cur_data.path))
+ 			continue;
+ 
+ 		let idx = phy_index(name);

@@ -1,0 +1,16 @@
+# Reproducible SBE1V1K source inputs, frozen on 2026-07-22.
+OPENWRT_REPOSITORY=https://github.com/andrewjlamarche/openwrt.git
+OPENWRT_BRANCH=sbe1v1k
+OPENWRT_COMMIT=525e6238f484876a0551323f9be4599e2945bc84
+OPENWRT_TREE_AFTER_PATCHES=67a6d6b5080b00925eec3a2c16710047959044e3
+
+# https://github.com/openwrt/openwrt/pull/23786
+ATH12K_PER_RADIO_MAC_COMMIT=e811bcdf07a8db43d0b6a33171afe4468a34ba02
+
+# Felix Fietkau's multi-candidate PCI-path proposal, referenced from PR #23840.
+WIFI_MULTIPATH_PATCH=https://nbd.name/p/b83be8f0
+
+# https://github.com/openwrt/firmware_qca-wireless/pull/123
+QCN9274_BDF_COMMIT=0d2b3c0c42b5cae549e59f1a3f003216ed4d6c4b
+QCN9274_BDF_SHA256=5ed8477ace2ce31236d756de24f31e7169acc69d8df18e5b81e7fdea0715e97a
+
