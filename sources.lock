@@ -6,21 +6,28 @@ OPENWRT_COMMIT=525e6238f484876a0551323f9be4599e2945bc84
 OPENWRT_TREE_AUTHOR_HEAD=a3913efb3e6ae889d95bdd76b652e46f2e2b5f2a
 OPENWRT_DEVICE_TREE_AFTER_PATCHES=67a6d6b5080b00925eec3a2c16710047959044e3
 
+# Official OpenWrt main synchronized on 2026-07-22.
+OPENWRT_UPSTREAM_REPOSITORY=https://github.com/openwrt/openwrt.git
+OPENWRT_UPSTREAM_MAIN_COMMIT=bd7188a81e5aa43d994cf997894341fe7727a9d0
+OPENWRT_UPSTREAM_MERGE_COMMIT=3858b913cc913b5f5441eb86baf0f9ace93f4bf1
+
 # https://github.com/openwrt/openwrt/pull/23786
 ATH12K_PER_RADIO_MAC_COMMIT=e811bcdf07a8db43d0b6a33171afe4468a34ba02
 
-# Felix Fietkau's multi-candidate PCI-path proposal, referenced from PR #23840.
+# Felix Fietkau's multi-candidate PCI-path proposal, referenced from PR #23840
+# and subsequently merged into official OpenWrt main.
 WIFI_MULTIPATH_PATCH=https://nbd.name/p/b83be8f0
-WIFI_MULTIPATH_STATUS=experimental_not_in_author_head
-WIFI_MULTIPATH_LOCAL_COMMIT=2268c9ebab
+WIFI_MULTIPATH_STATUS=merged_in_openwrt_main
+WIFI_MULTIPATH_UPSTREAM_COMMIT=2c642576270de2606de6d0890fb627066c3a1595
+WIFI_MULTIPATH_LOCAL_DRAFT_COMMIT=72dce28ee041d518428456a7b8b3863e661a83d6
 
 # https://github.com/openwrt/firmware_qca-wireless/pull/123
 QCN9274_BDF_COMMIT=0d2b3c0c42b5cae549e59f1a3f003216ed4d6c4b
 QCN9274_BDF_SHA256=5ed8477ace2ce31236d756de24f31e7169acc69d8df18e5b81e7fdea0715e97a
 
 # Direct commits in this repository.
-ATH12K_PER_RADIO_MAC_LOCAL_COMMIT=06e83ac02d
-QCN9274_BDF_LOCAL_COMMIT=e5a4e1e388
+ATH12K_PER_RADIO_MAC_LOCAL_COMMIT=d5ed1d2f5d
+QCN9274_BDF_LOCAL_COMMIT=c221a773d6
 
 # Official feeds used by configs/feeds.conf.
 PACKAGES_FEED_COMMIT=c7e6d5ce4252fe3ebe7268cfea1e935cd5f52339

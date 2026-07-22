@@ -9,9 +9,9 @@ SBE1V1K 已经具备可用的 OpenWrt 设备支持代码，但还不能称为“
 - OpenWrt 设备支持 [PR #21586](https://github.com/openwrt/openwrt/pull/21586) 仍为 Open 状态，因此官方 snapshot/稳定版中还没有该机型配置和镜像。
 - PR 作者是 `andrewjlamarche`，其源码为 [andrewjlamarche/openwrt 的 sbe1v1k 分支](https://github.com/andrewjlamarche/openwrt/tree/sbe1v1k)。本项目固定在提交 `525e6238f484876a0551323f9be4599e2945bc84`，避免作者 force-push 后构建内容悄悄变化。
 - 作者分支已有 CPU、2 GB 内存、8 GB eMMC、四个以太网口、三频 Wi-Fi、LED、复位键和 PWM 风扇定义。论坛用户也报告这些普通功能可工作。
-- 仅克隆作者分支仍缺三个在途项：每 radio MAC、随机 PCI 枚举下的三 radio 稳定识别，以及 QCN9274 BDF。本仓库已把它们做成直接修改 OpenWrt 源码的可追溯提交；其中多路径提交并非作者最终代码，而是未上游的实验性集成。
+- 仅克隆作者分支仍缺每 radio MAC、随机 PCI 枚举下的三 radio 稳定识别，以及 QCN9274 BDF。本仓库保留了这些来源的可追溯提交；其中多路径支持现已作为 OpenWrt 官方提交 `2c64257627` 合入，本分支采用官方实现。
 - 目前没有 IPQ9574 PPE/NSS 硬件路由加速支持；高吞吐转发按软件路径理解。这里的“可用”不等于官方合并，也不等于有硬件卸载。
-- PR 的 GitHub 检查没有完成一次完整的 `qualcommbe/ipq95xx` 镜像编译；本项目当前 Windows 主机也没有安装 WSL Linux 发行版，因此这里不冒充“已实机构建验证”。源码 tree、补丁应用和二进制校验已经验证，完整编译命令如下。
+- 本项目已在 WSL2 Ubuntu 24.04 中完成一次完整的 `qualcommbe/ipq95xx` 冷构建，成功生成并校验 initramfs、factory 和 sysupgrade 镜像。这里的构建验证不等于实机刷写验证，完整编译命令如下。
 
 ## 2. 硬件与支持状态
 
@@ -35,7 +35,7 @@ SBE1V1K 已经具备可用的 OpenWrt 设备支持代码，但还不能称为“
 本仓库根目录就是完整 OpenWrt 工作树，不再需要源码生成脚本。`sources.lock` 是来源锁文件，相关 Git 线索明确分开：
 
 - `author-head` 分支：严格指向 Andrew 的 `525e623`，tree 为 `a3913efb3e6ae889d95bdd76b652e46f2e2b5f2a`。它用于审计，不含独立 BDF、per-radio MAC 和多路径修复。
-- `main` 分支：推荐编译版本，在作者分支上直接增加下面三个源码提交；应用完设备补丁、加入本项目文档和 feeds 固定之前的源码 tree 为：
+- `main` 分支：推荐编译版本，在作者分支上增加设备所需提交，并继续合并 OpenWrt 官方 `main`；应用完最初设备补丁、加入本项目文档和 feeds 固定之前的源码 tree 为：
 
 ```text
 67a6d6b5080b00925eec3a2c16710047959044e3
@@ -43,17 +43,17 @@ SBE1V1K 已经具备可用的 OpenWrt 设备支持代码，但还不能称为“
 
 `feeds.conf.default` 把 packages、LuCI、routing、telephony、video 五个官方 feed 固定到 2026-07-22 的精确提交。否则 `feeds update -a` 会随时间漂移，即使设备源码 tree 相同也可能构建出不同内容。
 
-直接源码提交如下：
+设备相关源码提交如下：
 
-1. `06e83ac02d wifi: ath12k: set per-radio MAC address from DT`
+1. `d5ed1d2f5d wifi: ath12k: set per-radio MAC address from DT`
    - 来源：[OpenWrt PR #23786](https://github.com/openwrt/openwrt/pull/23786)
    - 上游提交：`e811bcdf07a8db43d0b6a33171afe4468a34ba02`
    - 用途：从 DT 给单 wiphy 内的三个 radio 设置各自 MAC。
-2. `2268c9ebab wifi-scripts: support multiple candidate PCI paths`
+2. `2c64257627 wifi-scripts: support multiple device paths per board.json wlan entry`
    - 来源：[Felix Fietkau 补丁 b83be8f0](https://nbd.name/p/b83be8f0)，设计讨论见 [PR #23840](https://github.com/openwrt/openwrt/pull/23840)
-   - 状态：**没有包含在 Andrew 的最终分支中，也未合入 OpenWrt；属于本项目实验性集成**。
+   - 状态：已合入 OpenWrt 官方 `main`。本项目早期本地集成提交为 `72dce28ee0`，同步上游时已采用官方版本。
    - 用途：把多个可能的 PCI 路径写入 `board.json`，避免 PCI 枚举变化后无线配置重复或消失。
-3. `e5a4e1e388 ipq-wifi: vendor Askey SBE1V1K BDF`
+3. `c221a773d6 ipq-wifi: vendor Askey SBE1V1K BDF`
    - 来源：[firmware_qca-wireless PR #123](https://github.com/openwrt/firmware_qca-wireless/pull/123)，提交 `0d2b3c0c42b5cae549e59f1a3f003216ed4d6c4b`
    - BDF SHA-256：`5ed8477ace2ce31236d756de24f31e7169acc69d8df18e5b81e7fdea0715e97a`
    - 用途：在 BDF PR 合并前让三频 Wi-Fi 固件有正确的板级数据。
@@ -98,6 +98,9 @@ sudo apt install -y \
 mkdir -p "$HOME/src"
 git clone https://github.com/luckkyboy/SBE1V1K.git "$HOME/src/SBE1V1K"
 cd "$HOME/src/SBE1V1K"
+
+# 避免 WSL 注入的 Windows PATH 使 find -execdir 在 package/install 阶段失败。
+export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
 ./scripts/feeds update -a
 ./scripts/feeds install -a
@@ -300,7 +303,7 @@ dmesg | grep -Ei 'ath12k|qca8081|rtl826|pwm|mmc|error|fail'
 
 ## 13. 已知风险和不要做的事
 
-- 设备 PR、BDF PR 和 per-radio MAC PR 仍可能变化。本项目固定提交，不会自动获得未来修正；更新时应审阅上游差异后新增可追溯提交。
+- 设备 PR、BDF PR 和 per-radio MAC PR 仍可能变化。本项目固定提交，不会自动获得未来修正；更新时应审阅上游差异后新增可追溯提交。多 PCI 路径支持已经进入 OpenWrt 官方 `main`。
 - 尚无 PPE/NSS 硬件路由卸载，不能把端口线速等同于 NAT/防火墙线速。
 - 2026 年 7 月出现的 HTTP chainloader/重分区方案不是当前 OpenWrt 上游安装路径；本仓库已在 `SBE1V1K-UBOOT.md` 单独审计。使用它前必须理解 `mainline`/`large` 布局、备份边界和非原子写入风险。
 - 如果 sysupgrade 报 squashfs 校验/读取错误，先怀疑下载或 eMMC 写入损坏，停止重刷并核对镜像 SHA-256、串口日志和整盘备份。
