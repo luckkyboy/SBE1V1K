@@ -9,8 +9,22 @@ platform_check_image() {
 
 platform_do_upgrade() {
 	case "$(board_name)" in
+	askey,sbe1v1k)
+		CI_KERNPART="0:HLOS"
+		CI_ROOTPART="rootfs"
+		CI_DATAPART="rootfs_data"
+		emmc_do_upgrade "$1"
+		;;
 	*)
 		default_do_upgrade "$1"
+		;;
+	esac
+}
+
+platform_copy_config() {
+	case "$(board_name)" in
+	askey,sbe1v1k)
+		emmc_copy_config
 		;;
 	esac
 }
