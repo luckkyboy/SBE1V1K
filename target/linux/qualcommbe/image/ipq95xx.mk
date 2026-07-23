@@ -12,7 +12,7 @@ define Device/askey_sbe1v1k
 	KERNEL_LOADADDR := 0x42080000
 	SOC := ipq9570
 	DEVICE_PACKAGES := ath12k-firmware-qcn9274 f2fsck ipq-wifi-askey_sbe1v1k kmod-ath12k \
-		kmod-hwmon-pwmfan kmod-phy-rtl8261n mkfsck mkf2fs
+		kmod-hwmon-pwmfan kmod-phy-rtl8261n luci-app-ddns luci-app-passwall mkfsck mkf2fs
 endef
 TARGET_DEVICES += askey_sbe1v1k
 
