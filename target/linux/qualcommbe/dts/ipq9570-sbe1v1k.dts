@@ -393,7 +393,7 @@
 			reg = <3>;
 			phy-mode = "qsgmii";
 			phy-handle = <&qca8075_18>;
-			pcs-handle = <&pcs0_ch2>;
+			pcs-handle = <&pcsuniphy0_ch2>;
 			managed = "in-band-status";
 			label = "lan2";
 
@@ -415,7 +415,7 @@
 			reg = <4>;
 			phy-mode = "qsgmii";
 			phy-handle = <&qca8075_19>;
-			pcs-handle = <&pcs0_ch3>;
+			pcs-handle = <&pcsuniphy0_ch3>;
 			managed = "in-band-status";
 			label = "lan3";
 
@@ -437,7 +437,7 @@
 			reg = <5>;
 			phy-mode = "usxgmii";
 			phy-handle = <&qca8081_28>;
-			pcs-handle = <&pcs1_ch0>;
+			pcs-handle = <&pcsuniphy1_ch0>;
 			managed = "in-band-status";
 			label = "lan1";
 
@@ -459,7 +459,7 @@
 			reg = <6>;
 			phy-mode = "usxgmii";
 			phy-handle = <&rtl8261be_0>;
-			pcs-handle = <&pcs2_ch0>;
+			pcs-handle = <&pcsuniphy2_ch0>;
 			managed = "in-band-status";
 			label = "wan";
 
