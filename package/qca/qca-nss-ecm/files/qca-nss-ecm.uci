@@ -1,8 +1,13 @@
 config ecm 'global'
-	option acceleration_engine 'auto'
+	option acceleration_engine 'ppe'
+	list denied_interface 'tun0'
+	list denied_interface 'tun1'
+	list denied_interface 'wg0'
+	list denied_interface 'tailscale0'
+	list denied_interface 'singbox0'
 
 config general
-	option enable_bridge_filtering	'1'
+	option enable_bridge_filtering	'0'
 	option disable_offloads '0'
 	option disable_flow_control '0'
 	option disable_interrupt_moderation '0'

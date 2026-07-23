@@ -1,0 +1,38 @@
+--- a/nss_dp_main.c
++++ b/nss_dp_main.c
+@@ -645,7 +645,7 @@ static int nss_dp_set_features(struct ne
+ 	return 0;
+ }
+ 
+-#ifdef CONFIG_RFS_ACCEL
++#if defined(CONFIG_RFS_ACCEL) && defined(NSS_DP_RFS_ACCEL)
+ /*
+  * nss_dp_rx_flow_steer()
+  *	Steer the flow rule to NSS
+@@ -834,7 +834,7 @@ static const struct net_device_ops nss_d
+ #ifndef NSS_DP_IPQ50XX
+ 	.ndo_select_queue = nss_dp_select_queue,
+ #endif
+ 
+-#ifdef CONFIG_RFS_ACCEL
++#if defined(CONFIG_RFS_ACCEL) && defined(NSS_DP_RFS_ACCEL)
+ 	.ndo_rx_flow_steer = nss_dp_rx_flow_steer,
+ #endif
+@@ -1311,7 +1311,7 @@ static int nss_dp_probe(struct platform_
+  * Note: We only remove the physical ports here. Virtual
+  * port devices are removed explicitly by the VP module.
+  */
+-static int nss_dp_remove(struct platform_device *pdev)
++static void nss_dp_remove(struct platform_device *pdev)
+ {
+ 	uint32_t i;
+ 	struct nss_dp_dev *dp_priv;
+@@ -1366,8 +1366,6 @@ static int nss_dp_remove(struct platform
+ 		free_netdev(dp_priv->netdev);
+ 		dp_global_ctx.nss_dp[i] = NULL;
+ 	}
+-
+-	return 0;
+ }
+ 
+ static struct of_device_id nss_dp_dt_ids[] = {

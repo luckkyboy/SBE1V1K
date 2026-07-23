@@ -1,0 +1,42 @@
+--- a/src/init/ssdk_init.c
++++ b/src/init/ssdk_init.c
+@@ -1704,7 +1704,8 @@ static int qca_switchdev_register(struct qca_phy_priv *priv)
+ }
+ #endif
+ 
+-#if IS_ENABLED(CONFIG_NET_DSA)
++#if IS_ENABLED(CONFIG_NET_DSA) && \
++	(LINUX_VERSION_CODE < KERNEL_VERSION(6, 12, 0))
+ static struct qca_phy_priv* ssdk_get_priv_with_dsa_dev(struct net_device *dev)
+ {
+ 	struct dsa_port *dp = NULL;
+@@ -1855,7 +1856,8 @@ static int ssdk_switch_register(a_uint32_t dev_id, ssdk_chip_type  chip_type)
+ 		}
+ 	}
+ 
+-#if IS_ENABLED(CONFIG_NET_DSA)
++#if IS_ENABLED(CONFIG_NET_DSA) && \
++	(LINUX_VERSION_CODE < KERNEL_VERSION(6, 12, 0))
+ 	if (priv->version == QCA_VER_MHT ||
+ 		priv->version == QCA_VER_AR8337 ||
+ 		priv->version == QCA_VER_AR8327)
+@@ -1883,7 +1885,8 @@ static int ssdk_switch_unregister(a_uint32_t dev_id)
+ 	unregister_switch(&qca_phy_priv_global[dev_id]->sw_dev);
+ #endif
+ 
+-#if IS_ENABLED(CONFIG_NET_DSA)
++#if IS_ENABLED(CONFIG_NET_DSA) && \
++	(LINUX_VERSION_CODE < KERNEL_VERSION(6, 12, 0))
+ 	if (priv->version == QCA_VER_MHT ||
+ 		priv->version == QCA_VER_AR8337 ||
+ 		priv->version == QCA_VER_AR8327)
+@@ -2173,7 +2176,8 @@ static int ssdk_netdev_notifier_callback(struct notifier_block *nb,
+ 		case NETDEV_REGISTER:
+ 			if (strstr(dev->name, "eth") && !(dev->priv_flags & IFF_802_1Q_VLAN))
+ 				ssdk_netdev_switch_init(dev);
+-#if IS_ENABLED(CONFIG_NET_DSA)
++#if IS_ENABLED(CONFIG_NET_DSA) && \
++	(LINUX_VERSION_CODE < KERNEL_VERSION(6, 12, 0))
+ 			if (dsa_slave_dev_check(dev))
+ 				ssdk_dsa_intf_register(dev);
+ #endif

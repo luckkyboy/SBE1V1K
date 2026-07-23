@@ -1,0 +1,72 @@
+--- a/nss_dp_ethtools.c
++++ b/nss_dp_ethtools.c
+@@ -203,3 +203,4 @@ static int32_t nss_dp_set_pauseparam(str
+ #endif
+ 
++#if 0 /* Legacy integer EEE API was removed in Linux 6.12. */
+ /*
+@@ -380,5 +381,6 @@ static int32_t nss_dp_set_eee(struct net
+ 
+ 	return 0;
+ }
++#endif
+ 
+ /*
+@@ -406,7 +408,7 @@ static int nss_dp_set_priv_flags(struct
+  * nss_dp_get_ts_info()
+  *	Get PTP timestamping information
+  */
+-static int nss_dp_get_ts_info(struct net_device *dev, struct ethtool_ts_info *info)
++static int nss_dp_get_ts_info(struct net_device *dev, struct kernel_ethtool_ts_info *info)
+ {
+ 	struct nss_dp_dev *dp_priv = (struct nss_dp_dev *)netdev_priv(dev);
+ 
+@@ -612,8 +614,6 @@ struct ethtool_ops nss_dp_ethtool_ops =
+ #endif
+ 	.get_pauseparam = &nss_dp_get_pauseparam,
+ 	.set_pauseparam = &nss_dp_set_pauseparam,
+-	.get_eee = &nss_dp_get_eee,
+-	.set_eee = &nss_dp_set_eee,
+ 	.get_priv_flags = nss_dp_get_priv_flags,
+ 	.set_priv_flags = nss_dp_set_priv_flags,
+ 	.get_ts_info = nss_dp_get_ts_info,
+--- a/hal/include/nss_dp_hal_if.h
++++ b/hal/include/nss_dp_hal_if.h
+@@ -84,6 +84,6 @@ struct nss_gmac_hal_ops {
+ 	int32_t (*getstrings)(struct nss_gmac_hal_dev *, int32_t, uint8_t *);
+ 	int32_t (*getethtoolstats)(struct nss_gmac_hal_dev *, uint64_t *, struct nss_dp_gmac_stats *);
+-	int32_t (*get_ts_info)(struct nss_gmac_hal_dev *, struct ethtool_ts_info *);
++	int32_t (*get_ts_info)(struct nss_gmac_hal_dev *, struct kernel_ethtool_ts_info *);
+ 	int (*hwtstamp_set)(void *hal_ctx, struct ifreq *ifr);
+ 	int (*hwtstamp_get)(void *hal_ctx, struct ifreq *ifr);
+ };
+--- a/hal/gmac_ops/syn/xgmac/syn_if.c
++++ b/hal/gmac_ops/syn/xgmac/syn_if.c
+@@ -359,7 +359,7 @@ static int32_t syn_send_tx_pause_frame(s
+  * hardware and populates the ethtool_ts_info structure.
+  */
+ static int32_t syn_get_ts_info(struct nss_gmac_hal_dev *nghd,
+-				struct ethtool_ts_info *info)
++				struct kernel_ethtool_ts_info *info)
+ {
+ 	struct syn_hal_dev *shd = (struct syn_hal_dev *)nghd;
+ 
+--- a/hal/gmac_ops/syn/xgmac/syn_ptp.c
++++ b/hal/gmac_ops/syn/xgmac/syn_ptp.c
+@@ -1787,7 +1787,7 @@ static int syn_ptp_start(struct syn_ptp_p
+  *
+  * Returns: 0 on success, negative error code on failure
+  */
+-int syn_ptp_get_ts_info(struct syn_hal_dev *shd, struct ethtool_ts_info *info)
++int syn_ptp_get_ts_info(struct syn_hal_dev *shd, struct kernel_ethtool_ts_info *info)
+ {
+ 	struct syn_ptp_priv *ptp_priv;
+ 
+--- a/hal/gmac_ops/syn/xgmac/syn_ptp.h
++++ b/hal/gmac_ops/syn/xgmac/syn_ptp.h
+@@ -149,4 +149,4 @@ void syn_ptp_cleanup(struct syn_hal_dev *
+-int syn_ptp_get_ts_info(struct syn_hal_dev *shd, struct ethtool_ts_info *info);
++int syn_ptp_get_ts_info(struct syn_hal_dev *shd, struct kernel_ethtool_ts_info *info);
+ int syn_ptp_hwtstamp_set(void *hal_ctx, struct ifreq *ifr);
+ int syn_ptp_hwtstamp_get(void *hal_ctx, struct ifreq *ifr);
+ 

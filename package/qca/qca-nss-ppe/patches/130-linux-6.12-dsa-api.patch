@@ -1,0 +1,108 @@
+--- a/drv/ppe_drv/ppe_drv_nexthop.c
++++ b/drv/ppe_drv/ppe_drv_nexthop.c
+@@ -8,6 +8,7 @@
+ #if defined(NSS_VLAN_BASED_DSA_SUPPORT) || defined(NSS_ATH_HDR_BASED_DSA_SUPPORT)
+ #include <linux/dsa/8021q.h>
+ #include <net/dsa.h>
++#define DSA_TAG_PROTO_QCA_8021Q DSA_TAG_PROTO_8021Q
+ #endif
+ #include "ppe_drv.h"
+ 
+@@ -372,7 +373,7 @@ static void ppe_drv_nexthop_free(struct
+  * ppe_drv_nexthop_ref()
+  *	Reference PPE nexthop interface
+  */
+-struct ppe_drv_nexthop *ppe_drv_nexthop_ref(struct ppe_drv_nexthop *nh)
++static struct ppe_drv_nexthop *ppe_drv_nexthop_ref(struct ppe_drv_nexthop *nh)
+ {
+ 	kref_get(&nh->ref);
+ 	return nh;
+@@ -526,7 +527,7 @@ struct ppe_drv_nexthop *ppe_drv_nexthop
+ 		is_vlan_as_vp = is_vlan_dev(iface_tx->dev) && (iface_tx->type == PPE_DRV_IFACE_TYPE_VIRTUAL);
+ 		is_vlan_as_veip = is_vlan_dev(iface_tx->dev) && (iface_tx->type == PPE_DRV_IFACE_TYPE_VEIP);
+ #if defined(NSS_VLAN_BASED_DSA_SUPPORT) || defined(NSS_ATH_HDR_BASED_DSA_SUPPORT)
+-		is_dsa_dev = dsa_slave_dev_check(iface_tx->dev) && (iface_tx->type == PPE_DRV_IFACE_TYPE_VIRTUAL);
++		is_dsa_dev = dsa_user_dev_check(iface_tx->dev) && (iface_tx->type == PPE_DRV_IFACE_TYPE_VIRTUAL);
+ #endif
+ 	}
+ 
+@@ -1022,7 +1023,7 @@ struct ppe_drv_nexthop *ppe_drv_nexthop
+ 		is_vlan_as_vp = is_vlan_dev(iface_tx->dev) && (iface_tx->type == PPE_DRV_IFACE_TYPE_VIRTUAL);
+ 		is_vlan_as_veip = is_vlan_dev(iface_tx->dev) && (iface_tx->type == PPE_DRV_IFACE_TYPE_VEIP);
+ #if defined(NSS_VLAN_BASED_DSA_SUPPORT) || defined(NSS_ATH_HDR_BASED_DSA_SUPPORT)
+-		is_dsa_dev = dsa_slave_dev_check(iface_tx->dev) && (iface_tx->type == PPE_DRV_IFACE_TYPE_VIRTUAL);
++		is_dsa_dev = dsa_user_dev_check(iface_tx->dev) && (iface_tx->type == PPE_DRV_IFACE_TYPE_VIRTUAL);
+ #endif
+ 	}
+ 
+--- a/drv/ppe_drv/ppe_drv_vlan.c
++++ b/drv/ppe_drv/ppe_drv_vlan.c
+@@ -295,7 +295,7 @@ struct ppe_drv_vsi *ppe_drv_vlan_vsi_set
+ 	/*
+ 	 * Handling for DSA/VLAN on DSA interface
+ 	 */
+-	if (!base_dev && dsa_slave_dev_check(iface->dev)) {
++	if (!base_dev && dsa_user_dev_check(iface->dev)) {
+ 		/*
+ 		 * We reach here if it's not a VLAN dev, eg: lan1.
+ 		 * base_dev is NULL at this point. Set base_dev as lan1's CPU port.
+@@ -304,7 +304,7 @@ struct ppe_drv_vsi *ppe_drv_vlan_vsi_set
+ 		if (dp) {
+ 			base_dev = dsa_port_to_master(dp);
+ 		}
+-	} else if (base_dev && dsa_slave_dev_check(base_dev)) {
++	} else if (base_dev && dsa_user_dev_check(base_dev)) {
+ 		/*
+ 		 * VLAN over DSA interface ? eg: lan1.10.
+ 		 * base_dev would already been set to lan1. Set base_dev as lan1's CPU port.
+@@ -421,7 +421,7 @@ bool ppe_drv_vlan_vsi_release(struct ppe
+ 	/*
+ 	 * Handling for DSA/VLAN on DSA interface
+ 	 */
+-	if (!base_dev && dsa_slave_dev_check(iface->dev)) {
++	if (!base_dev && dsa_user_dev_check(iface->dev)) {
+ 		/*
+ 		 * We reach here if it's not a VLAN dev, eg: lan1.
+ 		 * base_dev is NULL at this point. Set base_dev as lan1's CPU port.
+@@ -430,7 +430,7 @@ bool ppe_drv_vlan_vsi_release(struct ppe
+ 		if (dp) {
+ 			base_dev = dsa_port_to_master(dp);
+ 		}
+-	} else if (base_dev && dsa_slave_dev_check(base_dev)) {
++	} else if (base_dev && dsa_user_dev_check(base_dev)) {
+ 		/*
+ 		 * VLAN over DSA interface ? eg: lan1.10.
+ 		 * base_dev would already been set to lan1. Set base_dev as lan1's CPU port.
+--- a/drv/ppe_drv/ppe_drv_v6.c
++++ b/drv/ppe_drv/ppe_drv_v6.c
+@@ -2573,7 +2573,7 @@ static bool ppe_drv_v6_vlan_check(struct
+ 
+ 	is_vlan_as_veip = is_vlan_dev(tx_port_if->dev) && (tx_port_if->type == PPE_DRV_IFACE_TYPE_VEIP);
+ #if defined(NSS_VLAN_BASED_DSA_SUPPORT) || defined(NSS_ATH_HDR_BASED_DSA_SUPPORT)
+-	is_dsa_dev = dsa_slave_dev_check(tx_port_if->dev) && (tx_port_if->type == PPE_DRV_IFACE_TYPE_VIRTUAL);
++	is_dsa_dev = dsa_user_dev_check(tx_port_if->dev) && (tx_port_if->type == PPE_DRV_IFACE_TYPE_VIRTUAL);
+ #endif
+ 
+ 	if (vlan_cnt && !is_vlan_as_veip && !is_vlan_as_vp && !eg_vsi_if && !is_dsa_dev) {
+--- a/drv/ppe_drv/ppe_drv_v4.c
++++ b/drv/ppe_drv/ppe_drv_v4.c
+@@ -2043,7 +2043,7 @@ static bool ppe_drv_v4_vlan_check(struct
+ 
+ 	is_vlan_as_veip = is_vlan_dev(tx_port_if->dev) && (tx_port_if->type == PPE_DRV_IFACE_TYPE_VEIP);
+ #if defined(NSS_VLAN_BASED_DSA_SUPPORT) || defined(NSS_ATH_HDR_BASED_DSA_SUPPORT)
+-	is_dsa_dev = dsa_slave_dev_check(tx_port_if->dev) && (tx_port_if->type == PPE_DRV_IFACE_TYPE_VIRTUAL);
++	is_dsa_dev = dsa_user_dev_check(tx_port_if->dev) && (tx_port_if->type == PPE_DRV_IFACE_TYPE_VIRTUAL);
+ #endif
+ 
+ 	if (vlan_cnt && !is_vlan_as_veip && !is_vlan_as_vp && !eg_vsi_if && !is_dsa_dev) {
+--- a/drv/ppe_drv/ppe_drv_port.c
++++ b/drv/ppe_drv/ppe_drv_port.c
+@@ -1647,7 +1647,7 @@ static bool ppe_drv_port_ucast_queue_set
+ 	}
+ 
+ #if defined(NSS_VLAN_BASED_DSA_SUPPORT) || defined(NSS_ATH_HDR_BASED_DSA_SUPPORT)
+-	if ((pp->type == PPE_DRV_PORT_VIRTUAL) && dsa_slave_dev_check(pp->dev)) {
++	if ((pp->type == PPE_DRV_PORT_VIRTUAL) && dsa_user_dev_check(pp->dev)) {
+ 		profile = PPE_DRV_REDIR_PROFILE_ID;
+ 	}
+ #endif

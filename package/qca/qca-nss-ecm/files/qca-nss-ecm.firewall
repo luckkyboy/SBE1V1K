@@ -1,4 +1,10 @@
 #!/bin/sh
+
+# Firewall and PassWall reloads can change marks, redirects and policy routes.
+# Defunct all accelerated rules so every connection is classified again.
+[ -e /sys/kernel/debug/ecm/ecm_db/defunct_all ] &&
+	echo 1 > /sys/kernel/debug/ecm/ecm_db/defunct_all
+
 if [ ! -r /sbin/fw4 ]; then
 iptables-save|grep physdev-is-bridged|while read a; do
 	iptables -D FORWARD -m physdev --physdev-is-bridged -j ACCEPT

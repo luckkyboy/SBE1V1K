@@ -1,0 +1,15 @@
+#!/bin/sh
+
+denied_list="/proc/sys/net/ecm/interface_denied_list"
+dev="${DEVICE:-${DEVICENAME:-$INTERFACE}}"
+
+[ -n "$dev" ] || exit 0
+[ -e "$denied_list" ] || exit 0
+
+case "$dev" in
+	tun*|wg*|tailscale*|singbox*|xray*|passwall*)
+		echo "add $dev" > "$denied_list"
+		[ -e /sys/kernel/debug/ecm/ecm_db/defunct_all ] &&
+			echo 1 > /sys/kernel/debug/ecm/ecm_db/defunct_all
+		;;
+esac

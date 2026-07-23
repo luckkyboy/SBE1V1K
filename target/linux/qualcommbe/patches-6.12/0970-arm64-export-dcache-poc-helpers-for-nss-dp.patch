@@ -1,0 +1,31 @@
+From: SBE1V1K LEDE PPE port
+Subject: [PATCH] arm64: export PoC cache helpers for NSS-DP
+
+The QSDK NSS-DP driver directly maintains cache coherency for its EDMA
+descriptor and packet fast paths.  QSDK kernels expose private dmac_*()
+helpers, while upstream arm64 provides the equivalent PoC primitives but
+does not export them to modules.
+
+Export the two existing primitives used by NSS-DP.  The driver uses the
+full-barrier variants for both regular and former no-DSB call sites.
+
+--- a/arch/arm64/mm/dma-mapping.c
++++ b/arch/arm64/mm/dma-mapping.c
+@@ -5,6 +5,7 @@
+  */
+ 
+ #include <linux/gfp.h>
++#include <linux/export.h>
+ #include <linux/cache.h>
+ #include <linux/dma-map-ops.h>
+ #include <xen/xen.h>
+@@ -13,6 +14,9 @@
+ #include <asm/cacheflush.h>
+ #include <asm/xen/xen-ops.h>
+ 
++EXPORT_SYMBOL_GPL(dcache_clean_poc);
++EXPORT_SYMBOL_GPL(dcache_inval_poc);
++
+ void arch_sync_dma_for_device(phys_addr_t paddr, size_t size,
+ 			      enum dma_data_direction dir)
+ {

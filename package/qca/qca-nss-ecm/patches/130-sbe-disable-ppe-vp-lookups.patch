@@ -1,0 +1,28 @@
+--- a/frontends/ppe/ecm_ppe_ipv4.h
++++ b/frontends/ppe/ecm_ppe_ipv4.h
+@@ -9,5 +9,11 @@
+ #include <ppe_drv_v4.h>
+ #include <ppe_drv_v6.h>
+ #include <ppe_vp_public.h>
++
++/*
++ * SBE1V1K has no Wi-Fi or tunnel virtual-port clients.  Keep ECM on the
++ * normal Ethernet PPE path without requiring QSDK's private skb recycler ABI.
++ */
++#define ppe_vp_get_netdev_by_port_num(port_num) NULL
+ 
+ extern int ecm_ppe_ipv4_no_action_limit_default;		/* Default no-action limit. */
+--- a/frontends/ppe/ecm_ppe_ipv6.h
++++ b/frontends/ppe/ecm_ppe_ipv6.h
+@@ -9,5 +9,11 @@
+ #include <ppe_drv_v4.h>
+ #include <ppe_drv_v6.h>
+ #include <ppe_vp_public.h>
++
++/*
++ * SBE1V1K has no Wi-Fi or tunnel virtual-port clients.  Keep ECM on the
++ * normal Ethernet PPE path without requiring QSDK's private skb recycler ABI.
++ */
++#define ppe_vp_get_netdev_by_port_num(port_num) NULL
+ 
+ #ifdef CONFIG_NF_CONNTRACK_NPTV6_EXT

@@ -1,0 +1,40 @@
+From: SBE1V1K LEDE PPE maintainers
+Subject: [PATCH] ecm: keep marked flows on the Linux software path
+
+PassWall and similar policy-routing applications use skb and conntrack marks
+to steer traffic through TPROXY, REDIRECT and tunnel paths.  Programming such
+flows into PPE would bypass the policy path after ECM accelerates the
+connection.  Be conservative and reject all marked flows from the PPE
+frontend.
+
+--- a/frontends/ppe/ecm_ppe_common.c
++++ b/frontends/ppe/ecm_ppe_common.c
+@@ -274,6 +274,28 @@ bool ecm_ppe_feature_check(struct sk_buf
+ {
+ 	bool inner = 0;
+ 
++	/*
++	 * Policy-routing and transparent-proxy applications, including
++	 * PassWall, use packet and conntrack marks.  These flows must remain
++	 * visible to the Linux networking stack and must never bypass policy
++	 * routing through PPE.
++	 */
++	if (unlikely(skb->mark)) {
++		DEBUG_TRACE("%px: marked packet (0x%x); skip PPE acceleration\n",
++			    skb, skb->mark);
++		return false;
++	}
++
++#ifdef CONFIG_NF_CONNTRACK_MARK
++	{
++		enum ip_conntrack_info ctinfo;
++		struct nf_conn *ct = nf_ct_get(skb, &ctinfo);
++
++		if (ct && unlikely(READ_ONCE(ct->mark)))
++			return false;
++	}
++#endif
++
+ #ifdef ECM_OPENWRT_SUPPORT
+ 	if (ip_hdr->protocol == IPPROTO_TCP) {
+ #if (LINUX_VERSION_CODE < KERNEL_VERSION(5, 13, 0))

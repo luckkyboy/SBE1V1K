@@ -1,0 +1,39 @@
+--- a/hal/soc_ops/ipq95xx/nss_ipq95xx.c
++++ b/hal/soc_ops/ipq95xx/nss_ipq95xx.c
+@@ -85,6 +85,29 @@ int32_t nss_dp_hal_configure_clocks(void
+ 	struct platform_device *pdev = (struct platform_device *)ctx;
+ 	int32_t err;
+ 
++	/*
++	 * The upstream IPQ9574 clock controller represents the EDMA data and
++	 * configuration clocks as leaf clocks.  Their parent relationship
++	 * enables the NSS fabric clocks, replacing QSDK's legacy flat list.
++	 */
++	err = nss_dp_hal_clock_set_and_enable(&pdev->dev, "nss-edma-clk",
++					     353000000);
++	if (err) {
++		edma_err("Error: HAL failed to configure nss-edma-clk\n");
++		return -1;
++	}
++
++	err = nss_dp_hal_clock_set_and_enable(&pdev->dev, "nss-edma-cfg-clk",
++					     100000000);
++	if (err) {
++		edma_err("Error: HAL failed to configure nss-edma-cfg-clk\n");
++		return -1;
++	}
++
++	return 0;
++
++#if 0
++	/* Legacy QSDK clock topology, superseded by the upstream leaf clocks. */
+ 	err = nss_dp_hal_clock_set_and_enable(&pdev->dev, NSS_DP_EDMA_CSR_CLK, NSS_DP_EDMA_CSR_CLK_FREQ);
+ 	if (err) {
+ 		edma_err("Error: HAL failed to configure %s clock\n", NSS_DP_EDMA_CSR_CLK);
+@@ -286,6 +309,7 @@ int32_t nss_dp_hal_configure_clocks(void
+ 	edma_set_clk_stage(EDMA_CLK_STAGE_NSSNOC_MEMNOC);
+ 	return 0;
++#endif
+ }
+ 
+ /*

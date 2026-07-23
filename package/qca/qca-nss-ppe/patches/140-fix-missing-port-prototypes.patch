@@ -1,0 +1,18 @@
+--- a/drv/ppe_drv/ppe_drv_port.h
++++ b/drv/ppe_drv/ppe_drv_port.h
+@@ -166,6 +166,7 @@ uint8_t ppe_drv_port_is_tunnel_vp(struct
+ 
+ struct net_device *ppe_drv_port_to_dev(struct ppe_drv_port *pp);
+ struct ppe_drv_port *ppe_drv_port_from_dev(struct net_device *dev);
++struct ppe_drv_port *ppe_drv_port_from_dev_and_ref(struct net_device *dev);
+ struct ppe_drv_port *ppe_drv_port_from_tl_l3_if(struct ppe_drv_tun_l3_if *tl_l3_if);
+ 
+ void ppe_drv_port_mac_addr_set(struct ppe_drv_port *pp, const uint8_t *mac_addr);
+@@ -222,6 +223,7 @@ int16_t ppe_drv_port_metadata_to_pri_pro
+ int16_t ppe_drv_port_metadata_to_enq_vp_internal(uint8_t port_metadata);
+ 
+ int ppe_drv_port_src_profile_get_byidx(uint8_t port_idx);
++bool ppe_drv_port_src_profile_set(struct ppe_drv_port *pp, uint8_t src_profile);
+ bool ppe_drv_port_l2_vp_sc_config(struct ppe_drv_port *pp, ppe_drv_sc_t sc, uint32_t phy_port);
+ bool ppe_drv_port_loopback_port_get_info(void);
+ bool ppe_drv_port_l2_vp_sc_reset(struct ppe_drv_port *pp);

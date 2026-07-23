@@ -1,0 +1,8 @@
+--- a/Makefile
++++ b/Makefile
+@@ -216,5 +216,5 @@ endif
+ 
+ ccflags-y += $(NSS_DP_INCLUDE)
+-ccflags-y += -Wall -Werror
++ccflags-y += -Wall
+ ccflags-y += -DEDMA_DEBUG_LEVEL=2

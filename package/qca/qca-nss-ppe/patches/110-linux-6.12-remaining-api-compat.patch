@@ -1,0 +1,29 @@
+--- a/drv/ppe_drv/ppe_drv.c
++++ b/drv/ppe_drv/ppe_drv.c
+@@ -3929,7 +3929,7 @@ static bool ppe_drv_port_src_profile_set
+ 			continue;
+ 
+ 		if (!((pp_local->type == PPE_DRV_PORT_PHYSICAL) ||
+-		      ((pp_local->type == PPE_DRV_PORT_VIRTUAL) && dsa_slave_dev_check(pp_local->dev))))
++		      ((pp_local->type == PPE_DRV_PORT_VIRTUAL) && dsa_user_dev_check(pp_local->dev))))
+ 			continue;
+ 
+ 		q_dst.src_profile = src_profile;
+@@ -4233,7 +4233,7 @@ static bool ppe_drv_lpbk_buffer_map_remo
+ 	echo 'flush' : Remove all the entries from the map.
+ 	echo 'flush <ingress_dev> <egress_dev>' : Removes one specific pair
+  */
+-static int ppe_drv_lpbk_buffer_map_handler(struct ctl_table *table,
++static int ppe_drv_lpbk_buffer_map_handler(const struct ctl_table *table,
+ 		int write, void __user *buffer,
+ 		size_t *lenp, loff_t *ppos)
+ {
+@@ -4407,7 +4407,7 @@ static int ppe_drv_lpbk_buffer_map_handl
+ 	echo 1 > /proc/sys/ppe/ppe_drv/ddr_buffer_auto_en (enable)
+ 	echo 0 > /proc/sys/ppe/ppe_drv/ddr_buffer_auto_en (disable)
+  */
+-static int ppe_drv_ddr_buffer_auto_en_handler(struct ctl_table *table,
++static int ppe_drv_ddr_buffer_auto_en_handler(const struct ctl_table *table,
+ 		int write, void __user *buffer,
+ 		size_t *lenp, loff_t *ppos)
+ {

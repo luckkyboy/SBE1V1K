@@ -1,0 +1,28 @@
+--- a/nss_dp_main.c
++++ b/nss_dp_main.c
+@@ -878,7 +878,7 @@ static int32_t nss_dp_of_get_pdata(struc
+ 	hal_pdata->netdev = netdev;
+ 	hal_pdata->macid = dp_priv->macid;
+ 
+-	if (of_get_phy_mode(np, &dp_priv->phy_mii_type))
++	if (!of_get_phy_mode(np, &dp_priv->phy_mii_type))
+ 		dp_priv->phylink_en = true;
+ 
+ #if (!defined(NSS_DP_IPQ96XX) && !defined(NSS_DP_IPQ52XX))
+@@ -1188,6 +1188,16 @@ static int32_t nss_dp_probe(struct platf
+ 
+ 	dp_priv->drv_flags |= NSS_DP_PRIV_FLAG(INIT_DONE);
+ 
++	/*
++	 * Preserve the board's stable LAN/WAN interface names.  The upstream
++	 * PPE driver also consumes this standard device-tree property.
++	 */
++	{
++		const char *label;
++		if (!of_property_read_string(np, "label", &label))
++			strscpy(netdev->name, label, IFNAMSIZ);
++	}
++
+ 	/* Register the network interface */
+ 	ret = register_netdev(netdev);
+ 	if (ret) {

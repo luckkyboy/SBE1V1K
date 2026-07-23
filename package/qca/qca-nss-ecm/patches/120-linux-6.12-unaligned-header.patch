@@ -1,0 +1,30 @@
+--- a/frontends/ppe/ecm_ppe_ipv4.c
++++ b/frontends/ppe/ecm_ppe_ipv4.c
+@@ -23 +23 @@
+-#include <asm/unaligned.h>
++#include <linux/unaligned.h>
+--- a/frontends/ppe/ecm_ppe_ipv6.c
++++ b/frontends/ppe/ecm_ppe_ipv6.c
+@@ -24 +24 @@
+-#include <asm/unaligned.h>
++#include <linux/unaligned.h>
+--- a/frontends/ppe/ecm_ppe_ported_ipv4.c
++++ b/frontends/ppe/ecm_ppe_ported_ipv4.c
+@@ -23 +23 @@
+-#include <asm/unaligned.h>
++#include <linux/unaligned.h>
+--- a/frontends/ppe/ecm_ppe_ported_ipv6.c
++++ b/frontends/ppe/ecm_ppe_ported_ipv6.c
+@@ -24 +24 @@
+-#include <asm/unaligned.h>
++#include <linux/unaligned.h>
+--- a/frontends/ppe/ecm_ppe_non_ported_ipv4.c
++++ b/frontends/ppe/ecm_ppe_non_ported_ipv4.c
+@@ -23 +23 @@
+-#include <asm/unaligned.h>
++#include <linux/unaligned.h>
+--- a/frontends/ppe/ecm_ppe_non_ported_ipv6.c
++++ b/frontends/ppe/ecm_ppe_non_ported_ipv6.c
+@@ -24 +24 @@
+-#include <asm/unaligned.h>
++#include <linux/unaligned.h>

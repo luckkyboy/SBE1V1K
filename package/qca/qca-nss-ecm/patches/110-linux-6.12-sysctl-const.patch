@@ -1,0 +1,41 @@
+--- a/examples/ecm_ae_select.c
++++ b/examples/ecm_ae_select.c
+@@ -649,1 +649,1 @@
+-static int ecm_ae_select_test_rule_handler(struct ctl_table *ctl, int write, void *buffer, size_t *lenp, loff_t *ppos)
++static int ecm_ae_select_test_rule_handler(const struct ctl_table *ctl, int write, void *buffer, size_t *lenp, loff_t *ppos)
+--- a/examples/ecm_sfe_l2.c
++++ b/examples/ecm_sfe_l2.c
+@@ -919,1 +919,1 @@
+-static int ecm_sfe_l2_defunct_by_port_handler(struct ctl_table *ctl, int write, void *buffer, size_t *lenp, loff_t *ppos)
++static int ecm_sfe_l2_defunct_by_port_handler(const struct ctl_table *ctl, int write, void *buffer, size_t *lenp, loff_t *ppos)
+@@ -957,1 +957,1 @@
+-static int ecm_sfe_l2_defunct_by_5tuple_handler(struct ctl_table *ctl, int write, void *buffer, size_t *lenp, loff_t *ppos)
++static int ecm_sfe_l2_defunct_by_5tuple_handler(const struct ctl_table *ctl, int write, void *buffer, size_t *lenp, loff_t *ppos)
+@@ -1003,1 +1003,1 @@
+-static int ecm_sfe_l2_defunct_by_protocol_handler(struct ctl_table *ctl, int write, void *buffer, size_t *lenp, loff_t *ppos)
++static int ecm_sfe_l2_defunct_by_protocol_handler(const struct ctl_table *ctl, int write, void *buffer, size_t *lenp, loff_t *ppos)
+@@ -1103,1 +1103,1 @@
+-static int ecm_sfe_l2_policy_rule_handler(struct ctl_table *ctl, int write, void *buffer, size_t *lenp, loff_t *ppos)
++static int ecm_sfe_l2_policy_rule_handler(const struct ctl_table *ctl, int write, void *buffer, size_t *lenp, loff_t *ppos)
+@@ -1139,1 +1139,1 @@
+-static int ecm_sfe_l2_wan_name_handler(struct ctl_table *ctl, int write, void *buffer, size_t *lenp, loff_t *ppos)
++static int ecm_sfe_l2_wan_name_handler(const struct ctl_table *ctl, int write, void *buffer, size_t *lenp, loff_t *ppos)
+--- a/examples/ecm_pcc_test.c
++++ b/examples/ecm_pcc_test.c
+@@ -1450,1 +1450,1 @@
+-static int ecm_pcc_test_rule_handler(struct ctl_table *ctl, int write, void *buffer, size_t *lenp, loff_t *ppos)
++static int ecm_pcc_test_rule_handler(const struct ctl_table *ctl, int write, void *buffer, size_t *lenp, loff_t *ppos)
+@@ -1486,1 +1486,1 @@
+-static int ecm_pcc_test_unregister_handler(struct ctl_table *ctl, int write, void *buffer, size_t *lenp, loff_t *ppos)
++static int ecm_pcc_test_unregister_handler(const struct ctl_table *ctl, int write, void *buffer, size_t *lenp, loff_t *ppos)
+@@ -1510,1 +1510,1 @@
+-static int ecm_pcc_test_pcc_mirror_en_handler(struct ctl_table *ctl, int write, void *buffer, size_t *lenp, loff_t *ppos)
++static int ecm_pcc_test_pcc_mirror_en_handler(const struct ctl_table *ctl, int write, void *buffer, size_t *lenp, loff_t *ppos)
+--- a/frontends/ecm_front_end_common.c
++++ b/frontends/ecm_front_end_common.c
+@@ -1022,1 +1022,1 @@
+-int ecm_front_end_esp_spi_passthrough_enable_handler(struct ctl_table *ctl, int write, void *buffer, size_t *lenp, loff_t *ppos)
++int ecm_front_end_esp_spi_passthrough_enable_handler(const struct ctl_table *ctl, int write, void *buffer, size_t *lenp, loff_t *ppos)
+@@ -1353,1 +1353,1 @@
+-int ecm_front_end_unidir_accel_proc_handler(struct ctl_table *ctl, int write, void __user *buffer, size_t *lenp, loff_t *ppos)
++int ecm_front_end_unidir_accel_proc_handler(const struct ctl_table *ctl, int write, void __user *buffer, size_t *lenp, loff_t *ppos)

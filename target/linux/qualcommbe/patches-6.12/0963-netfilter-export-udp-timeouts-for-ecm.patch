@@ -1,0 +1,24 @@
+--- a/include/net/netfilter/nf_conntrack_timeout.h
++++ b/include/net/netfilter/nf_conntrack_timeout.h
+@@ -86,4 +86,6 @@ extern const struct nf_ct_timeout_hooks
+ extern const struct nf_ct_timeout_hooks __rcu *nf_ct_timeout_hook;
+ #endif
+ 
++unsigned int *udp_get_timeouts(struct net *net);
++
+ #endif /* _NF_CONNTRACK_TIMEOUT_H */
+--- a/net/netfilter/nf_conntrack_proto_udp.c
++++ b/net/netfilter/nf_conntrack_proto_udp.c
+@@ -29,10 +29,11 @@ static const unsigned int udp_timeouts[U
+ 	[UDP_CT_REPLIED]	= 120*HZ,
+ };
+ 
+-static unsigned int *udp_get_timeouts(struct net *net)
++unsigned int *udp_get_timeouts(struct net *net)
+ {
+ 	return nf_udp_pernet(net)->timeouts;
+ }
++EXPORT_SYMBOL_GPL(udp_get_timeouts);
+ 
+ static void udp_error_log(const struct sk_buff *skb,
+ 			  const struct nf_hook_state *state,

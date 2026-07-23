@@ -8,6 +8,8 @@
 #include <dt-bindings/input/input.h>
 #include <dt-bindings/leds/common.h>
 
+#include "ipq9570-sbe1v1k-ppe.dtsi"
+
 / {
 	model = "Askey SBE1V1K";
 	compatible = "askey,sbe1v1k", "qcom,ipq9574";
@@ -383,7 +385,11 @@
 };
 
 &qcom_ppe {
-	status = "okay";
+	/*
+	 * The QSDK SSDK/NSS-DP stack in ipq9570-sbe1v1k-ppe.dtsi owns the
+	 * same PPE/EDMA hardware resources on the lede-ppe branch.
+	 */
+	status = "disabled";
 
 	ethernet-ports {
 		#address-cells = <1>;

@@ -1,0 +1,95 @@
+--- a/drv/ppe_drv/ppe_drv_flow.c
++++ b/drv/ppe_drv/ppe_drv_flow.c
+@@ -8,6 +8,7 @@
+ #include <fal/fal_flow.h>
+ #include <fal/fal_qos.h>
+ #include <linux/phy.h>
++#include <linux/vmalloc.h>
+ #include "ppe_drv.h"
+ #include "tun/ppe_drv_tun.h"
+ 
+@@ -129,7 +130,7 @@ void ppe_drv_flow_stats_clear(struct ppe
+  * ppe_drv_flow_sawf_sc_stats_add()
+  *	Update stats for given service class.
+  */
+-void ppe_drv_flow_sawf_sc_stats_add(uint8_t service_class, uint32_t delta_pkts, uint32_t delta_bytes)
++static void ppe_drv_flow_sawf_sc_stats_add(uint8_t service_class, uint32_t delta_pkts, uint32_t delta_bytes)
+ {
+ 	struct ppe_drv_stats_sawf_sc *sawf_sc_stats;
+ 
+@@ -975,7 +976,7 @@ static void ppe_drv_flow_v6_host_qdisc_i
+  * ppe_drv_flow_v6_pri_profile_get()
+  *	Apply appropiate pri_profile for this flow.
+  */
+-bool ppe_drv_flow_v6_pri_profile_get(struct ppe_drv_v6_conn_flow *pcf, struct ppe_drv_port *pp, uint8_t *pri_profile)
++static bool ppe_drv_flow_v6_pri_profile_get(struct ppe_drv_v6_conn_flow *pcf, struct ppe_drv_port *pp, uint8_t *pri_profile)
+ {
+ 	struct ppe_drv *p = ppe_drv_gbl;
+ 	struct ppe_drv_flow *reverse_flow = NULL;
+@@ -1107,7 +1108,7 @@ bool ppe_drv_flow_v6_pri_profile_get(str
+  * ppe_drv_flow_v6_service_code_get()
+  *	Return service code required for this flow.
+  */
+-bool ppe_drv_flow_v6_service_code_get(struct ppe_drv_v6_conn_flow *pcf, struct ppe_drv_port *pp, uint8_t *scp)
++static bool ppe_drv_flow_v6_service_code_get(struct ppe_drv_v6_conn_flow *pcf, struct ppe_drv_port *pp, uint8_t *scp)
+ {
+ 	struct ppe_drv_port *port_rx = pcf->rx_port;
+ 	ppe_drv_sc_t service_code = *scp;
+@@ -2432,7 +2433,7 @@ static void ppe_drv_flow_v4_host_qdisc_i
+  * ppe_drv_flow_v4_pri_profile_get()
+  *	Apply appropiate pri_profile for this flow.
+  */
+-bool ppe_drv_flow_v4_pri_profile_get(struct ppe_drv_v4_conn_flow *pcf, struct ppe_drv_port *pp, uint8_t *pri_profile)
++static bool ppe_drv_flow_v4_pri_profile_get(struct ppe_drv_v4_conn_flow *pcf, struct ppe_drv_port *pp, uint8_t *pri_profile)
+ {
+ 	struct ppe_drv *p = ppe_drv_gbl;
+ 	struct ppe_drv_flow *reverse_flow = NULL;
+@@ -2653,7 +2654,7 @@ static inline bool ppe_drv_phydev_speed_
+  * ppe_drv_flow_v4_service_code_get()
+  *	Return service code required for this flow.
+  */
+-bool ppe_drv_flow_v4_service_code_get(struct ppe_drv_v4_conn_flow *pcf, struct ppe_drv_port *pp, uint8_t *scp)
++static bool ppe_drv_flow_v4_service_code_get(struct ppe_drv_v4_conn_flow *pcf, struct ppe_drv_port *pp, uint8_t *scp)
+ {
+ 	struct ppe_drv *p __maybe_unused = ppe_drv_gbl;
+ 	struct ppe_drv_port *port_rx = pcf->rx_port;
+@@ -3323,6 +3324,10 @@ struct ppe_drv_flow *ppe_drv_flow_v4_add
+ 		flow_cfg.fwd_type = FAL_FLOW_FORWARD;
+ 		ppe_drv_trace("%p: flow_tbl[fwd_type]: L2-Multicast: %u", pcf, FAL_FLOW_FORWARD);
+-	} else if ((match_src_ip != xlate_src_ip) || (dev_eg && (dev_eg->priv_flags_ext & IFF_EXT_MAPT))) {
++	} else if ((match_src_ip != xlate_src_ip)
++#ifdef IFF_EXT_MAPT
++			|| (dev_eg && (dev_eg->priv_flags_ext & IFF_EXT_MAPT))
++#endif
++			) {
+ 		/*
+ 		 * Case SNAT
+ 		 */
+@@ -3331,7 +3336,11 @@ struct ppe_drv_flow *ppe_drv_flow_v4_add
+ 		flow_cfg.snat_nexthop = nh->index;
+ 		flow_cfg.snat_srcport = ppe_drv_v4_conn_flow_xlate_src_ident_get(pcf);
+ 		ppe_drv_trace("%p: flow_tbl[nat_type]: SNAT: %u snat_port: %u", pcf, FAL_FLOW_SNAT, flow_cfg.snat_srcport);
+-	} else if ((match_dest_ip != xlate_dest_ip) || (dev_in && (dev_in->priv_flags_ext & IFF_EXT_MAPT))) {
++	} else if ((match_dest_ip != xlate_dest_ip)
++#ifdef IFF_EXT_MAPT
++			|| (dev_in && (dev_in->priv_flags_ext & IFF_EXT_MAPT))
++#endif
++			) {
+ 		/*
+ 		 * Case DNAT
+ 		 */
+--- a/drv/ppe_drv/tun/ppe_drv_tun_v6.c
++++ b/drv/ppe_drv/tun/ppe_drv_tun_v6.c
+@@ -281,10 +281,12 @@ bool ppe_drv_tun_v6_ce_validate(struct p
+ 	/*
+ 	 * Check if the rule is for MAP-T
+ 	 */
++#ifdef IFF_EXT_MAPT
+ 	if (dev->priv_flags_ext & IFF_EXT_MAPT) {
+ 		spin_unlock_bh(&p->lock);
+ 		return true;
+ 	}
++#endif
+ 
+ 	spin_unlock_bh(&p->lock);
+ 	return false;

@@ -1,0 +1,76 @@
+--- a/hal/dp_ops/edma_dp/edma_v2/edma.c
++++ b/hal/dp_ops/edma_dp/edma_v2/edma.c
+@@ -7,3 +7,4 @@
+ 
+ #include <linux/module.h>
++#include <linux/vmalloc.h>
+ #include <linux/debugfs.h>
+@@ -2383,4 +2384,4 @@ static void edma_enable_port_counters(st
+-int edma_hang_recovery_handler(struct ctl_table *table, int write,
++int edma_hang_recovery_handler(const struct ctl_table *table, int write,
+                 void __user *buffer, size_t *lenp, loff_t *ppos)
+ {
+ 	int ret;
+@@ -2405,4 +2406,4 @@ int edma_hang_recovery_handler(struct ct
+-int edma_vlan_append_handler(struct ctl_table *table, int write,
++int edma_vlan_append_handler(const struct ctl_table *table, int write,
+                 void __user *buffer, size_t *lenp, loff_t *ppos)
+ {
+ 	uint16_t ether_type_0, ether_type_1;
+@@ -2584,4 +2585,4 @@ int edma_vlan_append_handler(struct ctl_
+-int edma_force_crash_handler(struct ctl_table *table, int write,
++int edma_force_crash_handler(const struct ctl_table *table, int write,
+ 				void __user *buffer, size_t *lenp, loff_t *ppos)
+ {
+ 	int ret;
+--- a/hal/dp_ops/edma_dp/edma_v2/edma.h
++++ b/hal/dp_ops/edma_dp/edma_v2/edma.h
+@@ -593,3 +593,3 @@ void edma_configure_rps_hash_map(struct
+-int edma_hang_recovery_handler(struct ctl_table *table, int write, void __user *buffer, size_t *lenp, loff_t *ppos);
+-int edma_vlan_append_handler(struct ctl_table *table, int write, void __user *buffer, size_t *lenp, loff_t *ppos);
+-int edma_force_crash_handler(struct ctl_table *table, int write, void __user *buffer, size_t *lenp, loff_t *ppos);
++int edma_hang_recovery_handler(const struct ctl_table *table, int write, void __user *buffer, size_t *lenp, loff_t *ppos);
++int edma_vlan_append_handler(const struct ctl_table *table, int write, void __user *buffer, size_t *lenp, loff_t *ppos);
++int edma_force_crash_handler(const struct ctl_table *table, int write, void __user *buffer, size_t *lenp, loff_t *ppos);
+--- a/hal/dp_ops/edma_dp/edma_v2/edma_cfg_rx.h
++++ b/hal/dp_ops/edma_dp/edma_v2/edma_cfg_rx.h
+@@ -77,9 +77,9 @@ bool edma_cfg_rx_ring_en_mapped_queues(s
+-int edma_cfg_rx_fc_enable_handler(struct ctl_table *table, int write,
++int edma_cfg_rx_fc_enable_handler(const struct ctl_table *table, int write,
+ 		void __user *buffer, size_t *lenp, loff_t *ppos);
+ void edma_cfg_rx_page_mode_and_jumbo(struct edma_gbl_ctx *egc);
+-int edma_cfg_rx_queue_tail_drop_handler(struct ctl_table *table, int write,
++int edma_cfg_rx_queue_tail_drop_handler(const struct ctl_table *table, int write,
+ 		void __user *buffer, size_t *lenp, loff_t *ppos);
+-int edma_cfg_rx_rps(struct ctl_table *table, int write,
++int edma_cfg_rx_rps(const struct ctl_table *table, int write,
+ 		void __user *buffer, size_t *lenp, loff_t *ppos);
+-int edma_cfg_rx_rps_bitmap(struct ctl_table *table, int write,
++int edma_cfg_rx_rps_bitmap(const struct ctl_table *table, int write,
+ 		void __user *buffer, size_t *lenp, loff_t *ppos);
+--- a/hal/dp_ops/edma_dp/edma_v2/edma_cfg_rx.c
++++ b/hal/dp_ops/edma_dp/edma_v2/edma_cfg_rx.c
+@@ -1811,4 +1811,4 @@ static void edma_cfg_rx_fc_enable(struct
+-int edma_cfg_rx_fc_enable_handler(struct ctl_table *table, int write,
++int edma_cfg_rx_fc_enable_handler(const struct ctl_table *table, int write,
+ 		void __user *buffer, size_t *lenp, loff_t *ppos)
+ {
+ 	int ret;
+@@ -1869,4 +1869,4 @@ int edma_cfg_rx_fc_enable_handler(struct
+-int edma_cfg_rx_queue_tail_drop_handler(struct ctl_table *table, int write,
++int edma_cfg_rx_queue_tail_drop_handler(const struct ctl_table *table, int write,
+ 		void __user *buffer, size_t *lenp, loff_t *ppos)
+ {
+ 	int ret;
+@@ -1916,4 +1916,4 @@ int edma_cfg_rx_queue_tail_drop_handler(
+-int edma_cfg_rx_rps(struct ctl_table *table, int write,
++int edma_cfg_rx_rps(const struct ctl_table *table, int write,
+ 		void __user *buffer, size_t *lenp, loff_t *ppos)
+ {
+ 	int ret;
+@@ -1953,4 +1953,4 @@ int edma_cfg_rx_rps(struct ctl_table *ta
+-int edma_cfg_rx_rps_bitmap(struct ctl_table *table, int write,
++int edma_cfg_rx_rps_bitmap(const struct ctl_table *table, int write,
+ 		void __user *buffer, size_t *lenp, loff_t *ppos)
+ {
+ 	int ret;

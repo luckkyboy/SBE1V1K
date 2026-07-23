@@ -1,0 +1,156 @@
+--- a/hal/dp_ops/edma_dp/edma_v2/edma_rx.c
++++ b/hal/dp_ops/edma_dp/edma_v2/edma_rx.c
+@@ -24,4 +24,12 @@
+ /* QSDK-only skb accounting hook; it has no effect on packet ownership. */
+ #define mem_debug_update_skb(_skb) do { } while (0)
+ 
++static void edma_kfree_skb_queue(struct sk_buff_head *queue)
++{
++	struct sk_buff *skb;
++
++	while ((skb = skb_dequeue(queue)))
++		dev_kfree_skb_any(skb);
++}
++
+ extern nss_dp_vp_rx_cb_t nss_dp_vp_rx_reg_cb;
+@@ -422,7 +431,7 @@ static uint32_t edma_rx_alloc_buffer_list
+ 		/*
+ 		 * Allocate one skb and add to refill list
+ 		 */
+-		skb_alloc = netdev_alloc_skb_fast(NULL, rx_alloc_size);
++		skb_alloc = netdev_alloc_skb(NULL, rx_alloc_size);
+ 		if (likely(skb_alloc)) {
+ 			mem_debug_update_skb(skb_alloc);
+ 			list_add_tail(&skb_alloc->list, &rx_skb_alloc);
+@@ -529,15 +538,11 @@ static uint32_t edma_rx_alloc_buffer_list
+ 		 * If the packet is fast transmitted and hence fast recycled,
+ 		 * we can be assured that invalidate was already done at the
+ 		 * time of previous transmit
+ 		 */
+-		if (unlikely(!skb->fast_recycled)) {
+-			edma_dmac_inv_range_no_dsb((void *)skb->data,
+-					      (void *)(skb->data + rx_alloc_size -
+-					      EDMA_RX_SKB_HEADROOM -
+-					      NET_IP_ALIGN));
+-
+-		}
+-		skb->fast_recycled = 0;
++		edma_dmac_inv_range_no_dsb((void *)skb->data,
++				      (void *)(skb->data + rx_alloc_size -
++				      EDMA_RX_SKB_HEADROOM -
++				      NET_IP_ALIGN));
+ 
+ 		prod_idx = (prod_idx + 1) & EDMA_RX_RING_SIZE_MASK;
+ 	}
+@@ -961,14 +964,11 @@ static bool edma_rx_handle_host_qdisc_pa
+ 	skb->protocol = ethh->h_proto;
+ 	skb->dev = qdisc_dev;
+ 	skb->priority = ppe_drv_get_qos_tag(flow_idx);
+-	skb->fast_forwarded = 1;
+ 
+-	if (likely(dev_fast_xmit_qdisc(skb, qdisc_dev, bottom_dev))) {
+-		dev_put(qdisc_dev);
+-		return true;
+-	}
+-
++	/* dev_queue_xmit() consumes skb on both success and failure. */
++	dev_queue_xmit(skb);
+ 	dev_put(qdisc_dev);
++	return true;
+ 
+ 	/*
+ 	 * Update failure stats.
+@@ -2125,7 +2125,7 @@ static int edma_rx_reap_capwap(struct na
+ 			 */
+ 			skb->dev = ndev;
+ 			skb->skb_iif = ndev->ifindex;
+-			skb_set_int_pri(skb, EDMA_RXDESC_INT_PRI_GET(rxdesc_desc));
++			skb->priority = EDMA_RXDESC_INT_PRI_GET(rxdesc_desc);
+ 
+ 			/*
+ 			 * Handle linear packets
+@@ -2180,7 +2180,7 @@ static int edma_rx_reap_capwap(struct na
+ 		memset(&node->info, 0, sizeof(node->info));
+ 
+ 		if (unlikely(!edma_rx_vp_cb)) {
+-			dev_kfree_skb_list_fast(&tmp);
++			edma_kfree_skb_queue(&tmp);
+ 			continue;
+ 		}
+ 
+@@ -2333,7 +2333,7 @@ static int edma_rx_reap(struct napi_stru
+ 			 * Update skb fields for head skb
+ 			 */
+ 			skb->dev = ndev;
+-			skb_set_int_pri(skb, EDMA_RXDESC_INT_PRI_GET(rxdesc_desc));
++			skb->priority = EDMA_RXDESC_INT_PRI_GET(rxdesc_desc);
+ 			skb->skb_iif = ndev->ifindex;
+ 
+ 			/*
+--- a/hal/dp_ops/edma_dp/edma_v2/edma_tx.c
++++ b/hal/dp_ops/edma_dp/edma_v2/edma_tx.c
+@@ -21,4 +21,12 @@
+ /* QSDK-only skb accounting hook; it has no effect on packet ownership. */
+ #define mem_debug_update_skb(_skb) do { } while (0)
+ 
++static void edma_kfree_skb_queue(struct sk_buff_head *queue)
++{
++	struct sk_buff *skb;
++
++	while ((skb = skb_dequeue(queue)))
++		dev_kfree_skb_any(skb);
++}
++
+ #if IS_ENABLED(CONFIG_PTP_1588_CLOCK)
+@@ -247,15 +256,9 @@ static int edma_tx_complete(struct edma_g
+ 			/*
+ 			 * Fast-recycle the SKB with a list, if skb is originally allocated
+ 			 * from recycler and has been fast trasmitted
+ 			 */
+-			if (likely(skb->fast_xmit) && likely(skb->is_from_recycler)) {
+-				mem_debug_update_skb(skb);
+-				dev_check_skb_fast_recyclable(skb);
+-				__skb_queue_head(&h, skb);
+-			} else {
+-				mem_debug_update_skb(skb);
+-				dev_kfree_skb(skb);
+-			}
++			mem_debug_update_skb(skb);
++			dev_kfree_skb(skb);
+ 		}
+ 
+ 		cons_idx = ((cons_idx + 1) & EDMA_TX_RING_SIZE_MASK);
+@@ -265,7 +267,7 @@ static int edma_tx_complete(struct edma_g
+ 	}
+ 
+ 	if (likely(!skb_queue_empty(&h))) {
+-		dev_kfree_skb_list_fast(&h);
++		edma_kfree_skb_queue(&h);
+ 	}
+ 
+ 	txcmpl_ring->cons_idx = cons_idx;
+@@ -502,7 +504,7 @@ static inline void edma_tx_fill_pp_desc(
+ 	EDMA_TXDESC_SERVICE_CODE_SET(txd, PPE_DRV_SC_BYPASS_ALL);
+ 	EDMA_DST_INFO_SET(txd, dp_dev->macid);
+ 
+-	EDMA_TXDESC_INT_PRI_SET(txd, skb_get_int_pri(skb));
++	EDMA_TXDESC_INT_PRI_SET(txd, skb->priority);
+ 
+ 	/*
+ 	 * Check if the packet needs TSO
+@@ -921,15 +923,6 @@ netdev_tx_t edma_tx_ring_xmit(struct net
+ 		EDMA_TXDESC_ENDIAN_SET(txdesc);
+ 		num_desc_filled++;
+ 
+-		/*
+-		 * We set fast_recycled flag if packet has taken the
+-		 * SFE fast transmit path, so that any Rx DMA driver
+-		 * that allocates this packet later can avoid
+-		 * an invalidate operation
+-		 */
+-		if (likely(skb->fast_xmit) && likely(skb->is_from_recycler)) {
+-			skb->fast_recycled = 1;
+-		}
+ 	} else {
+ 		num_tx_desc_needed = edma_tx_num_descs_for_sg(skb);
+ 

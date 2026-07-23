@@ -1,0 +1,8 @@
+--- a/drv/ppe_drv/Makefile
++++ b/drv/ppe_drv/Makefile
+@@ -183,4 +183,4 @@ ccflags-y += -DPPE_DRV_GRETAP_MAPT_SINGL
+ endif
+ 
+-ccflags-y += -Wall -Werror
++ccflags-y += -Wall
+ ccflags-y += -DPPE_DRV_DEBUG_LEVEL=3

@@ -1,0 +1,10 @@
+--- a/src/init/ssdk_dts.c
++++ b/src/init/ssdk_dts.c
+@@ -23,6 +23,7 @@
+ #include <linux/of.h>
+ #include <linux/of_mdio.h>
+ #include <linux/of_platform.h>
++#include <linux/platform_device.h>
+ #if defined(IN_SFP_PHY)
+ #include "sfp_phy.h"
+ #endif

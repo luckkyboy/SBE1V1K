@@ -1,4 +1,4 @@
-#!/bin/sh  /etc/rc.common
+#!/bin/sh /etc/rc.common
 #
 # Copyright (c) 2014, 2019-2020 The Linux Foundation. All rights reserved.
 #
@@ -14,10 +14,6 @@
 # ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-# The shebang above has an extra space intentially to avoid having
-# openwrt build scripts automatically enable this package starting
-# at boot.
-
 START=19
 
 get_front_end_mode() {
@@ -31,14 +27,47 @@ get_front_end_mode() {
 	nss)
 		echo '1'
 		;;
+	sfe)
+		echo '2'
+		;;
+	ppe)
+		echo '3'
+		;;
 	*)
 		echo 'uci_option_acceleration_engine is invalid'
 	esac
 }
 
 support_bridge() {
-	# NSS support bridge acceleration
-	[ -d /sys/kernel/debug/ecm/ecm_nss_ipv4 ] && [ -d /sys/kernel/debug/ecm/ecm_nss_ipv6 ] && return 0
+	[ -d /sys/kernel/debug/ecm/ecm_ppe_ipv4 ] &&
+		[ -d /sys/kernel/debug/ecm/ecm_ppe_ipv6 ] && return 0
+}
+
+deny_interface() {
+	local denied_list="/proc/sys/net/ecm/interface_denied_list"
+	local dev="$1"
+
+	[ -e "$denied_list" ] || return 0
+	[ -d "/sys/class/net/$dev" ] || return 0
+	echo "add $dev" > "$denied_list"
+}
+
+apply_denied_interfaces() {
+	local netdev dev
+
+	config_load "ecm"
+	config_list_foreach global denied_interface deny_interface
+
+	# Keep transparent proxies, policy-routing tunnels and VPNs on the
+	# software path even when they were created after the UCI defaults.
+	for netdev in /sys/class/net/*; do
+		dev="${netdev##*/}"
+		case "$dev" in
+			tun*|wg*|tailscale*|singbox*|xray*|passwall*)
+				deny_interface "$dev"
+				;;
+		esac
+	done
 }
 
 enable_bridge_filtering() {
@@ -69,9 +98,11 @@ disable_bridge_filtering() {
 load_ecm() {
 	[ -d /sys/module/ecm ] || {
 		insmod ecm front_end_selection=$(get_front_end_mode)
-		echo 1 > /sys/kernel/debug/ecm/ecm_classifier_default/accel_delay_pkts
+		[ -e /sys/kernel/debug/ecm/ecm_classifier_default/accel_delay_pkts ] &&
+			echo 1 > /sys/kernel/debug/ecm/ecm_classifier_default/accel_delay_pkts
 	}
 
+	apply_denied_interfaces
 	support_bridge && enable_bridge_filtering
 }
 
@@ -99,9 +130,6 @@ unload_ecm() {
 start() {
 	load_ecm
 
-	# If the acceleration engine is NSS, enable wifi redirect
-	[ -d /sys/kernel/debug/ecm/ecm_nss_ipv4 ] && sysctl -w dev.nss.general.redirect=1
-
 	# If bridge filtering is enabled, apply and persist the sysctl flags
 	local bridge_filtering_enabled="$(uci_get ecm @general[0] enable_bridge_filtering)"
 	if [ "$bridge_filtering_enabled" -eq 1 ]; then
@@ -119,9 +147,6 @@ stop() {
 	if [ ! -d /sys/module/ecm ]; then
 		return
 	fi
-
-	# If the acceleration engine is NSS, disable wifi redirect
-	[ -d /sys/kernel/debug/ecm/ecm_nss_ipv4 ] && sysctl -w dev.nss.general.redirect=0
 
 	# If bridge filtering is enabled, reset the sysctl flags
 	local bridge_filtering_enabled="$(uci_get ecm @general[0] enable_bridge_filtering)"

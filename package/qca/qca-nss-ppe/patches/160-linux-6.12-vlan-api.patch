@@ -1,0 +1,46 @@
+--- a/drv/ppe_drv/ppe_drv_vlan.c
++++ b/drv/ppe_drv/ppe_drv_vlan.c
+@@ -4,6 +4,7 @@
+  */
+ 
+ #include <linux/etherdevice.h>
++#include <linux/vmalloc.h>
+ #include <linux/if_vlan.h>
+ #ifdef NSS_VLAN_BASED_DSA_SUPPORT
+ #include <net/dsa.h>
+@@ -302,7 +303,7 @@ struct ppe_drv_vsi *ppe_drv_vlan_vsi_set
+ 		 */
+ 		dp = dsa_port_from_netdev(iface->dev);
+ 		if (dp) {
+-			base_dev = dsa_port_to_master(dp);
++			base_dev = dsa_port_to_conduit(dp);
+ 		}
+ 	} else if (base_dev && dsa_user_dev_check(base_dev)) {
+ 		/*
+@@ -311,7 +312,7 @@ struct ppe_drv_vsi *ppe_drv_vlan_vsi_set
+ 		 */
+ 		dp = dsa_port_from_netdev(base_dev);
+ 		if (dp) {
+-			base_dev = dsa_port_to_master(dp);
++			base_dev = dsa_port_to_conduit(dp);
+ 		}
+ 	}
+ #endif
+@@ -428,7 +429,7 @@ bool ppe_drv_vlan_vsi_release(struct ppe
+ 		 */
+ 		dp = dsa_port_from_netdev(iface->dev);
+ 		if (dp) {
+-			base_dev = dsa_port_to_master(dp);
++			base_dev = dsa_port_to_conduit(dp);
+ 		}
+ 	} else if (base_dev && dsa_user_dev_check(base_dev)) {
+ 		/*
+@@ -437,7 +438,7 @@ bool ppe_drv_vlan_vsi_release(struct ppe
+ 		 */
+ 		dp = dsa_port_from_netdev(base_dev);
+ 		if (dp) {
+-			base_dev = dsa_port_to_master(dp);
++			base_dev = dsa_port_to_conduit(dp);
+ 		}
+ 	}
+ #endif

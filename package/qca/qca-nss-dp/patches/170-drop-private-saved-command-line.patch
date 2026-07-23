@@ -1,0 +1,14 @@
+--- a/nss_dp_main.c
++++ b/nss_dp_main.c
+@@ -43,2 +43,0 @@
+-extern char *saved_command_line;
+-
+@@ -224,7 +222,7 @@ static void nss_dp_mem_profile_detect(st
+ 	u32 __rx_ring_sz, __tx_ring_sz;
+ 	u32 flags;
+ 
+-	flags = __get_mem_profile_flag(saved_command_line);
++	flags = __get_mem_profile_flag(NULL);
+ 
+ 	/*
+ 	 * Default values for each profile, this is not expected
