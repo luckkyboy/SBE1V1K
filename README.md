@@ -4,6 +4,13 @@
 
 I18N: [English](README_EN.md) | [简体中文](README.md) | [日本語](README_JA.md)
 
+## SBE1V1K LEDE PPE 分支
+
+本仓库的 `lede-ppe` 分支为 Askey SBE1V1K / RTQ7300T 迁移了 QSDK SSDK、
+PPE、NSS-DP/EDMA 和 ECM 硬件加速数据路径，并针对 Linux 6.12 完成适配。
+功能范围、构建方法、PassWall 共存机制、实机验证步骤和已知风险请阅读
+[LEDE-PPE.md](LEDE-PPE.md)。
+
 ## 官方讨论群
 
 如有技术问题需要讨论或者交流，欢迎加入以下群：
